@@ -1,0 +1,39 @@
+This is a custom command that displays the vehicle's spawn position in view or on a map.
+I am creating this for the main purpose of cheating in search missions.
+
+■Install
+  1. Subscribe this work.
+  2. Create a new save data with "Vehicle Mark" enabled.
+     New Game > Enable Addons > Workshop > Vehicle Mark
+
+■Usage
+  You can run this by typing a command into the chat field.
+
+  - ?vmark list [num]
+    Lists vehicles that have recently spawned.
+    If [num] is not specified, it shows 10 vehicles.
+    If [num] is specified, it shows the specified number of vehicles.
+    The output will be "[vehicle_id]vehicle_name (spawned by peer_name, spawn_time)".
+    If the vehicle was spawned by the script, the player name will not be displayed.
+
+  - ?vmark set [vehicle_id]
+    Mark the spawn position of the vehicle.
+    If [vehicle_id] is not specified, the most recently spawned vehicle is marked.
+    If [vehicle_id] is specified, the vehicle will be marked. vehicle_id can be found in the "?vmark list".
+    In multiplayer, the mark is displayed to all players.
+    You can't mark two or more vehicles at the same time.
+
+  - ?vmark clear
+    Erase the mark.
+
+■Caveats
+  - The mark is fixed to the spawn position of the vehicle.
+    If the vehicle moves, the mark will not follow the vehicle.
+  - It has not yet been confirmed to work in multiplayer.
+    This mission was created with multiplayer in mind, but I don't know if it will work properly.
+  - This probably won't work in experimental branch.
+
+■Repository
+  https://github.com/gcrtnst/sw_vmark
+
+(Translated using DeepL Translator)
