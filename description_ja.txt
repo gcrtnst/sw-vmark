@@ -34,4 +34,4 @@
   ・experimental branch では恐らく動作しません。
 
 ■リポジトリ
-  https://github.com/gcrtnst/sw_vmark
+  https://github.com/gcrtnst/sw-vmark

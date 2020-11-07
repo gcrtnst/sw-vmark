@@ -34,6 +34,6 @@ I am creating this for the main purpose of cheating in search missions.
   - This probably won't work in experimental branch.
 
 ■Repository
-  https://github.com/gcrtnst/sw_vmark
+  https://github.com/gcrtnst/sw-vmark
 
 (Translated using DeepL Translator)
