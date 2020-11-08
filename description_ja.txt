@@ -33,5 +33,10 @@
     一応マルチプレイも想定して作成していますが、正常動作するかどうか分かりません。
   ・experimental branch では恐らく動作しません。
 
+■利用可否
+改変　　：○
+二次配布：○
+実況動画：○
+
 ■リポジトリ
   https://github.com/gcrtnst/sw-vmark
