@@ -149,7 +149,7 @@ function onTick(game_ticks)
                 -1,
                 g_savedata['mark']['vehicle_display_name'],
                 0,
-                string.format('spawned %s ago', formatTicks(g_savedata['time'] - g_savedata['mark']['spawn_time']))
+                ''
             )
             for _, player in pairs(server.getPlayers()) do
                 local text = g_savedata['mark']['vehicle_display_name']
