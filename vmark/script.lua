@@ -147,7 +147,7 @@ function onTick(game_ticks)
                 if is_success then
                     text = text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
                 end
-                server.setPopup(-1, g_savedata['ui_id'], 'Vehicle Mark', true, text, vehicle_x, vehicle_y, vehicle_z, 0)
+                server.setPopup(player['id'], g_savedata['ui_id'], 'Vehicle Mark', true, text, vehicle_x, vehicle_y, vehicle_z, 0)
             end
         end
     end
