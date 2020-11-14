@@ -4,7 +4,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
     if cmd == mission_cmd then
         if #args <= 0 or args[1] == 'help' then
             server.announce(
-                full_message,
+                getPlaylistNameCurrent(),
                 mission_cmd .. ' list [num]\n' ..
                 mission_cmd .. ' set [vehicle_id]\n' ..
                 mission_cmd .. ' clear',
@@ -13,7 +13,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             return
         elseif args[1] == 'list' then
             if #args > 2 then
-                server.announce(full_message, 'too many arguments', user_peer_id)
+                server.announce(getPlaylistNameCurrent(), 'too many arguments', user_peer_id)
                 return
             end
 
@@ -21,13 +21,13 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             if #args == 2 then
                 num = tonumber(args[2])
                 if num == fail then
-                    server.announce(full_message, string.format('expected number, got "%s"', args[2]), user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), string.format('expected number, got "%s"', args[2]), user_peer_id)
                     return
                 elseif num < 0 then
-                    server.announce(full_message, string.format('expected positive number, got "%s"', args[2]), user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), string.format('expected positive number, got "%s"', args[2]), user_peer_id)
                     return
                 elseif math.floor(num) ~= num then
-                    server.announce(full_message, string.format('expected integer, got "%s"', args[2]), user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), string.format('expected integer, got "%s"', args[2]), user_peer_id)
                     return
                 end
             end
@@ -44,11 +44,11 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                 ))
             end
             msg = table.concat(msg, '\n')
-            server.announce(full_message, msg, user_peer_id)
+            server.announce(getPlaylistNameCurrent(), msg, user_peer_id)
             return
         elseif args[1] == 'set' then
             if #args > 2 then
-                server.announce(full_message, 'too many arguments', user_peer_id)
+                server.announce(getPlaylistNameCurrent(), 'too many arguments', user_peer_id)
                 return
             end
 
@@ -57,7 +57,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             if #args == 2 then
                 local vehicle_id = tonumber(args[2])
                 if vehicle_id == fail then
-                    server.announce(full_message, string.format('expected number, got "%s"', args[2]), user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), string.format('expected number, got "%s"', args[2]), user_peer_id)
                     return
                 end
                 for i = 1, #list do
@@ -67,29 +67,29 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                     end
                 end
                 if mark == nil then
-                    server.announce(full_message, string.format('unlisted vehicle_id: %d', vehicle_id), user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), string.format('unlisted vehicle_id: %d', vehicle_id), user_peer_id)
                     return
                 end
             else
                 if #list <= 0 then
-                    server.announce(full_message, 'no vehicle spawned yet', user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), 'no vehicle spawned yet', user_peer_id)
                     return
                 end
                 mark = list[#list]
             end
             g_savedata['mark'] = mark
-            server.announce(full_message, string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_display_name']))
+            server.announce(getPlaylistNameCurrent(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_display_name']))
             return
         elseif args[1] == 'clear' then
             if #args > 1 then
-                server.announce(full_message, 'too many arguments', user_peer_id)
+                server.announce(getPlaylistNameCurrent(), 'too many arguments', user_peer_id)
                 return
             end
             g_savedata['mark'] = nil
-            server.announce(full_message, string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
+            server.announce(getPlaylistNameCurrent(), string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
             return
         else
-            server.announce(full_message, string.format('unknown subcommand "%s"', args[1]), user_peer_id)
+            server.announce(getPlaylistNameCurrent(), string.format('unknown subcommand "%s"', args[1]), user_peer_id)
             return
         end
     end
@@ -177,6 +177,12 @@ function onCreate(is_world_create)
             ['list'] = {}
         }
     end
+end
+
+function getPlaylistNameCurrent()
+    local playlist_index = server.getPlaylistIndexCurrent()
+    local playlist_data = server.getPlaylistData(playlist_index)
+    return playlist_data['name']
 end
 
 function getPlayerDisplayName(peer_id)
