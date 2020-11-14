@@ -206,14 +206,24 @@ function saveList(list)
 end
 
 function formatTicks(ticks)
-    if ticks < 60 then
+    if ticks < 2 then
+        return string.format('%d', ticks) .. ' tick'
+    elseif ticks < 60 then
         return string.format('%d', ticks) .. ' ticks'
+    elseif ticks < 120 then
+        return '1 second'
     elseif ticks < 3600 then
         return string.format('%d', ticks // 60) .. ' seconds'
+    elseif ticks < 7200 then
+        return '1 minute'
     elseif ticks < 216000 then
         return string.format('%d', ticks // 3600) .. ' minutes'
+    elseif ticks < 432000 then
+        return '1 hour'
     elseif ticks < 5184000 then
         return string.format('%d', ticks // 216000) .. ' hours'
+    elseif ticks < 10368000 then
+        return '1 day'
     end
     return string.format('%d', ticks // 5184000) .. ' days'
 end
