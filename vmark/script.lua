@@ -86,9 +86,6 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                 return
             end
             g_savedata['mark'] = nil
-
-            server.removeMapObject(-1, g_savedata['ui_id'])
-            server.removePopup(-1, g_savedata['ui_id'])
             server.announce(full_message, string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
             return
         else
@@ -124,7 +121,10 @@ end
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
-    if g_savedata['mark'] ~= nil then
+    if g_savedata['mark'] == nil then
+        server.removeMapObject(-1, g_savedata['ui_id'])
+        server.removePopup(-1, g_savedata['ui_id'])
+    else
         server.removeMapObject(-1, g_savedata['ui_id'])
         server.addMapObject(
             -1,
