@@ -35,22 +35,13 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             local list = loadList()
             local msg = {}
             for i = math.max(1, #list - num + 1), #list do
-                if list[i]['peer_id'] < 0 then
-                    table.insert(msg, string.format(
-                        '[%d]%s (spawned %s ago)',
-                        list[i]['vehicle_id'],
-                        list[i]['vehicle_name'],
-                        formatTicks(g_savedata['time'] - list[i]['spawn_time'])
-                    ))
-                else
-                    table.insert(msg, string.format(
-                        '[%d]%s (spawned by %s, %s ago)',
-                        list[i]['vehicle_id'],
-                        list[i]['vehicle_name'],
-                        list[i]['peer_name'],
-                        formatTicks(g_savedata['time'] - list[i]['spawn_time'])
-                    ))
-                end
+                table.insert(msg, string.format(
+                    '[%d]%s (spawned by %s, %s ago)',
+                    list[i]['vehicle_id'],
+                    list[i]['vehicle_display_name'],
+                    list[i]['peer_display_name'],
+                    formatTicks(g_savedata['time'] - list[i]['spawn_time'])
+                ))
             end
             msg = table.concat(msg, '\n')
             server.announce(full_message, msg, user_peer_id)
@@ -87,7 +78,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                 mark = list[#list]
             end
             g_savedata['mark'] = mark
-            server.announce(full_message, string.format('%s marked %s', server.getPlayerName(user_peer_id), mark['vehicle_name']))
+            server.announce(full_message, string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_display_name']))
             return
         elseif args[1] == 'clear' then
             if #args > 1 then
@@ -98,7 +89,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
 
             server.removeMapObject(-1, g_savedata['ui_id'])
             server.removePopup(-1, g_savedata['ui_id'])
-            server.announce(full_message, string.format('%s cleared the mark', server.getPlayerName(user_peer_id)))
+            server.announce(full_message, string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
             return
         else
             server.announce(full_message, string.format('unknown subcommand "%s"', args[1]), user_peer_id)
@@ -107,19 +98,20 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
     end
 end
 
-function onVehicleSpawn(vehicle_id, peer_id, x, y, z)
+function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
-        ['vehicle_name'] = server.getVehicleName(vehicle_id),
-        ['peer_id'] = peer_id,
         ['x'] = x,
         ['y'] = y,
         ['z'] = z,
     }
-    if peer_id >= 0 then
-        info['peer_name'] = server.getPlayerName(peer_id)
-    end
+    local vehicle_name, is_success = server.getVehicleName(vehicle_id)
+    info['vehicle_name'] = is_success and vehicle_name or nil
+    info['vehicle_display_name'] = is_success and vehicle_name or 'unnamed vehicle'
+    local peer_name, is_success = server.getPlayerName(peer_id)
+    info['peer_name'] = is_success and peer_name or nil
+    info['peer_display_name'] = is_success and peer_name or 'script'
 
     local list = loadList()
     table.insert(list, info)
@@ -140,38 +132,36 @@ function onTick(game_ticks)
             0,
             2,
             g_savedata['mark']['x'],
-            g_savedata['mark']['y'],
             g_savedata['mark']['z'],
             0,
             0,
-            0,
             -1,
             -1,
-            g_savedata['mark']['vehicle_name'],
-            -1,
+            g_savedata['mark']['vehicle_display_name'],
             0,
             string.format('spawned %s ago', formatTicks(g_savedata['time'] - g_savedata['mark']['spawn_time']))
         )
         for _, player in pairs(server.getPlayers()) do
+            local text = g_savedata['mark']['vehicle_display_name']
+            local peer_matrix, is_success = server.getPlayerPos(player['id'])
+            if is_success then
+                text = text .. '\n' .. formatDistance(
+                    matrix.distance(
+                        peer_matrix,
+                        matrix.translation(g_savedata['mark']['x'], g_savedata['mark']['y'], g_savedata['mark']['z'])
+                    )
+                )
+            end
+
             server.setPopup(
                 -1,
                 g_savedata['ui_id'],
                 'Vehicle Mark',
                 true,
-                string.format(
-                    '%s\n%s',
-                    g_savedata['mark']['vehicle_name'],
-                    formatDistance(
-                        matrix.distance(
-                            server.getPlayerPos(player['id']),
-                            matrix.translation(g_savedata['mark']['x'], g_savedata['mark']['y'], g_savedata['mark']['z'])
-                        )
-                    )
-                ),
+                text,
                 g_savedata['mark']['x'],
                 g_savedata['mark']['y'],
                 g_savedata['mark']['z'],
-                true,
                 0
             )
         end
@@ -179,14 +169,22 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] == nil then
+    if g_savedata['version'] ~= 1 then
         g_savedata = {
-            ['version'] = 0,
+            ['version'] = 1,
             ['time'] = 0,
             ['ui_id'] = server.getMapID(),
             ['list'] = {}
         }
     end
+end
+
+function getPlayerDisplayName(peer_id)
+    local peer_name, is_success = server.getPlayerName(peer_id)
+    if not is_success then
+        return 'someone'
+    end
+    return peer_name
 end
 
 function loadList()
