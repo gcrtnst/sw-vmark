@@ -14,7 +14,6 @@ I am creating this for the main purpose of cheating in search missions.
     If [num] is not specified, it shows 10 vehicles.
     If [num] is specified, it shows the specified number of vehicles.
     The output will be "[vehicle_id]vehicle_name (spawned by peer_name, spawn_time)".
-    If the vehicle was spawned by the script, the player name will not be displayed.
 
   - ?vmark set [vehicle_id]
     Mark the spawn position of the vehicle.
