@@ -112,7 +112,7 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
 
     local list = loadList()
     table.insert(list, info)
-    while #list > 128 do
+    while #list > 1024 do
         table.remove(list, 1)
     end
     saveList(list)
