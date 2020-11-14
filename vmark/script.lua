@@ -36,11 +36,11 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             local msg = {}
             for i = math.max(1, #list - num + 1), #list do
                 table.insert(msg, string.format(
-                    '[%d]%s (spawned by %s, %s ago)',
+                    '[%d]%s (spawned %s ago by %s)',
                     list[i]['vehicle_id'],
                     list[i]['vehicle_display_name'],
-                    list[i]['peer_display_name'],
-                    formatTicks(g_savedata['time'] - list[i]['spawn_time'])
+                    formatTicks(g_savedata['time'] - list[i]['spawn_time']),
+                    list[i]['peer_display_name']
                 ))
             end
             msg = table.concat(msg, '\n')
