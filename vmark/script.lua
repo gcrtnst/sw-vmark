@@ -118,6 +118,16 @@ end
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
+    local old_list = loadList()
+    local new_list = {}
+    for _, info in ipairs(old_list) do
+        local _, is_success = server.getVehiclePos(info['vehicle_id'])
+        if is_success then
+            table.insert(new_list, info)
+        end
+    end
+    saveList(new_list)
+
     server.removeMapObject(-1, g_savedata['ui_id'])
     if g_savedata['mark'] ~= nil then
         local vehicle_matrix, is_success = server.getVehiclePos(g_savedata['mark']['vehicle_id'])
