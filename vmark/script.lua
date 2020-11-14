@@ -99,9 +99,6 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
-        ['x'] = x,
-        ['y'] = y,
-        ['z'] = z,
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
@@ -121,57 +118,48 @@ end
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
-    if g_savedata['mark'] == nil then
-        server.removeMapObject(-1, g_savedata['ui_id'])
-        server.removePopup(-1, g_savedata['ui_id'])
-    else
-        server.removeMapObject(-1, g_savedata['ui_id'])
-        server.addMapObject(
-            -1,
-            g_savedata['ui_id'],
-            0,
-            2,
-            g_savedata['mark']['x'],
-            g_savedata['mark']['z'],
-            0,
-            0,
-            -1,
-            -1,
-            g_savedata['mark']['vehicle_display_name'],
-            0,
-            string.format('spawned %s ago', formatTicks(g_savedata['time'] - g_savedata['mark']['spawn_time']))
-        )
-        for _, player in pairs(server.getPlayers()) do
-            local text = g_savedata['mark']['vehicle_display_name']
-            local peer_matrix, is_success = server.getPlayerPos(player['id'])
-            if is_success then
-                text = text .. '\n' .. formatDistance(
-                    matrix.distance(
-                        peer_matrix,
-                        matrix.translation(g_savedata['mark']['x'], g_savedata['mark']['y'], g_savedata['mark']['z'])
-                    )
-                )
-            end
-
-            server.setPopup(
+    server.removeMapObject(-1, g_savedata['ui_id'])
+    if g_savedata['mark'] ~= nil then
+        local vehicle_matrix, is_success = server.getVehiclePos(g_savedata['mark']['vehicle_id'])
+        if not is_success then
+            server.announce(getPlaylistNameCurrent(), string.format('%s despawned', g_savedata['mark']['vehicle_display_name']))
+            g_savedata['mark'] = nil
+        else
+            local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
+            server.addMapObject(
                 -1,
                 g_savedata['ui_id'],
-                'Vehicle Mark',
-                true,
-                text,
-                g_savedata['mark']['x'],
-                g_savedata['mark']['y'],
-                g_savedata['mark']['z'],
-                0
+                0,
+                2,
+                vehicle_x,
+                vehicle_z,
+                0,
+                0,
+                -1,
+                -1,
+                g_savedata['mark']['vehicle_display_name'],
+                0,
+                string.format('spawned %s ago', formatTicks(g_savedata['time'] - g_savedata['mark']['spawn_time']))
             )
+            for _, player in pairs(server.getPlayers()) do
+                local text = g_savedata['mark']['vehicle_display_name']
+                local peer_matrix, is_success = server.getPlayerPos(player['id'])
+                if is_success then
+                    text = text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
+                end
+                server.setPopup(-1, g_savedata['ui_id'], 'Vehicle Mark', true, text, vehicle_x, vehicle_y, vehicle_z, 0)
+            end
         end
+    end
+    if g_savedata['mark'] == nil then
+        server.removePopup(-1, g_savedata['ui_id'])
     end
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 1 then
+    if g_savedata['version'] ~= 2 then
         g_savedata = {
-            ['version'] = 1,
+            ['version'] = 2,
             ['time'] = 0,
             ['ui_id'] = server.getMapID(),
             ['list'] = {}
