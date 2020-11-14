@@ -60,14 +60,9 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                     server.announce(getPlaylistNameCurrent(), string.format('expected number, got "%s"', args[2]), user_peer_id)
                     return
                 end
-                for i = 1, #list do
-                    if list[i]['vehicle_id'] == vehicle_id then
-                        mark = list[i]
-                        break
-                    end
-                end
+                mark = getVehicleInfo(vehicle_id)
                 if mark == nil then
-                    server.announce(getPlaylistNameCurrent(), string.format('unlisted vehicle_id: %d', vehicle_id), user_peer_id)
+                    server.announce(getPlaylistNameCurrent(), string.format('vehicle_id of a non-existent vehicle: %d', vehicle_id), user_peer_id)
                     return
                 end
             else
@@ -189,6 +184,29 @@ function getPlayerDisplayName(peer_id)
         return 'someone'
     end
     return peer_name
+end
+
+function getVehicleInfo(vehicle_id)
+    local list = loadList()
+    for _, info in ipairs(list) do
+        if info['vehicle_id'] == vehicle_id then
+            return info
+        end
+    end
+
+    local _, is_success = server.getVehiclePos(vehicle_id)
+    if not is_success then
+        return nil
+    end
+
+    local info = {
+        ['vehicle_id'] = vehicle_id,
+        ['peer_display_name'] = 'someone'
+    }
+    local vehicle_name, is_success = server.getVehicleName(vehicle_id)
+    info['vehicle_name'] = is_success and vehicle_name or nil
+    info['vehicle_display_name'] = is_success and vehicle_name or 'unnamed vehicle'
+    return info
 end
 
 function loadList()
