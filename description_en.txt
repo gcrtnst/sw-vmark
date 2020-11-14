@@ -26,8 +26,6 @@ I am creating this for the main purpose of cheating in search missions.
     Erase the mark.
 
 ■Caveats
-  - The mark is fixed to the spawn position of the vehicle.
-    If the vehicle moves, the mark will not follow the vehicle.
   - It has not yet been confirmed to work in multiplayer.
     This mission was created with multiplayer in mind, but I don't know if it will work properly.
   - This probably won't work in experimental branch.
