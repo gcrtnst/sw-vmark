@@ -13,7 +13,7 @@ I am creating this for the main purpose of cheating in search missions.
     Lists vehicles that have recently spawned.
     If [num] is not specified, it shows 10 vehicles.
     If [num] is specified, it shows the specified number of vehicles.
-    The output will be "[vehicle_id]vehicle_name (spawned by peer_name, spawn_time)".
+    The output will be "[vehicle_id]vehicle_name (spawned spawn_time by peer_name)".
 
   - ?vmark set [vehicle_id]
     Mark the spawn position of the vehicle.
