@@ -1,91 +1,102 @@
+g_cmd = '?vmark'
+
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...)
     local args = {...}
-    local mission_cmd = '?vmark'
-    if cmd == mission_cmd then
+    if cmd == g_cmd then
         if #args <= 0 or args[1] == 'help' then
-            server.announce(
-                getAnnounceName(),
-                mission_cmd .. ' list [num]\n' ..
-                mission_cmd .. ' set [vehicle_id]\n' ..
-                mission_cmd .. ' clear',
-                user_peer_id
-            )
-            return
+            execHelp(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'list' then
-            if #args > 2 then
-                server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
-                return
-            end
-
-            local num = 5
-            if #args == 2 then
-                num = tonumber(args[2])
-                if num == fail then
-                    server.announce(getAnnounceName(), string.format('expected number, got "%s"', args[2]), user_peer_id)
-                    return
-                elseif num < 0 then
-                    server.announce(getAnnounceName(), string.format('expected positive number, got "%s"', args[2]), user_peer_id)
-                    return
-                elseif math.floor(num) ~= num then
-                    server.announce(getAnnounceName(), string.format('expected integer, got "%s"', args[2]), user_peer_id)
-                    return
-                end
-            end
-
-            local msg = {}
-            for i = math.max(1, #g_savedata['list'] - num + 1), #g_savedata['list'] do
-                table.insert(msg, string.format(
-                    '[%d]%s (spawned %s ago by %s)',
-                    g_savedata['list'][i]['vehicle_id'],
-                    g_savedata['list'][i]['vehicle_display_name'],
-                    formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
-                    g_savedata['list'][i]['peer_display_name']
-                ))
-            end
-            msg = table.concat(msg, '\n')
-            server.announce(getAnnounceName(), msg, user_peer_id)
-            return
+            execList(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'set' then
-            if #args > 2 then
-                server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
-                return
-            end
-
-            local mark = nil
-            if #args == 2 then
-                local vehicle_id = tonumber(args[2])
-                if vehicle_id == fail then
-                    server.announce(getAnnounceName(), string.format('expected number, got "%s"', args[2]), user_peer_id)
-                    return
-                end
-                mark = getVehicleInfo(vehicle_id)
-                if mark == nil then
-                    server.announce(getAnnounceName(), string.format('vehicle_id of a non-existent vehicle: %d', vehicle_id), user_peer_id)
-                    return
-                end
-            else
-                if #g_savedata['list'] <= 0 then
-                    server.announce(getAnnounceName(), 'no vehicle spawned yet', user_peer_id)
-                    return
-                end
-                mark = g_savedata['list'][#g_savedata['list']]
-            end
-            g_savedata['mark'] = mark
-            server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_display_name']))
-            return
+            execSet(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clear' then
-            if #args > 1 then
-                server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
-                return
-            end
-            g_savedata['mark'] = nil
-            server.announce(getAnnounceName(), string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
-            return
+            execClear(user_peer_id, is_admin, is_auth, args)
         else
             server.announce(getAnnounceName(), string.format('unknown subcommand "%s"', args[1]), user_peer_id)
+        end
+    end
+end
+
+function execHelp(user_peer_id, is_admin, is_auth, args)
+    server.announce( getAnnounceName(),
+        g_cmd .. ' list [num]\n' ..
+        g_cmd .. ' set [vehicle_id]\n' ..
+        g_cmd .. ' clear',
+        user_peer_id
+    )
+end
+
+function execList(user_peer_id, is_admin, is_auth, args)
+    if #args > 2 then
+        server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
+        return
+    end
+
+    local num = 5
+    if #args == 2 then
+        num = tonumber(args[2])
+        if num == fail then
+            server.announce(getAnnounceName(), string.format('expected number, got "%s"', args[2]), user_peer_id)
+            return
+        elseif num < 0 then
+            server.announce(getAnnounceName(), string.format('expected positive number, got "%s"', args[2]), user_peer_id)
+            return
+        elseif math.floor(num) ~= num then
+            server.announce(getAnnounceName(), string.format('expected integer, got "%s"', args[2]), user_peer_id)
             return
         end
     end
+
+    local msg = {}
+    for i = math.max(1, #g_savedata['list'] - num + 1), #g_savedata['list'] do
+        table.insert(msg, string.format(
+            '[%d]%s (spawned %s ago by %s)',
+            g_savedata['list'][i]['vehicle_id'],
+            g_savedata['list'][i]['vehicle_display_name'],
+            formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
+            g_savedata['list'][i]['peer_display_name']
+        ))
+    end
+    msg = table.concat(msg, '\n')
+    server.announce(getAnnounceName(), msg, user_peer_id)
+end
+
+function execSet(user_peer_id, is_admin, is_auth, args)
+    if #args > 2 then
+        server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
+        return
+    end
+
+    local mark = nil
+    if #args == 2 then
+        local vehicle_id = tonumber(args[2])
+        if vehicle_id == fail then
+            server.announce(getAnnounceName(), string.format('expected number, got "%s"', args[2]), user_peer_id)
+            return
+        end
+        mark = getVehicleInfo(vehicle_id)
+        if mark == nil then
+            server.announce(getAnnounceName(), string.format('vehicle_id of a non-existent vehicle: %d', vehicle_id), user_peer_id)
+            return
+        end
+    else
+        if #g_savedata['list'] <= 0 then
+            server.announce(getAnnounceName(), 'no vehicle spawned yet', user_peer_id)
+            return
+        end
+        mark = g_savedata['list'][#g_savedata['list']]
+    end
+    g_savedata['mark'] = mark
+    server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_display_name']))
+end
+
+function execClear(user_peer_id, is_admin, is_auth, args)
+    if #args > 1 then
+        server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
+        return
+    end
+    g_savedata['mark'] = nil
+    server.announce(getAnnounceName(), string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
 end
 
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
