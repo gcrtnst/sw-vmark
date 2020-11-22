@@ -12,7 +12,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
         elseif args[1] == 'clear' then
             execClear(user_peer_id, is_admin, is_auth, args)
         else
-            server.announce(getAnnounceName(), string.format('unknown subcommand "%s"', args[1]), user_peer_id)
+            server.announce(getAnnounceName(), string.format('error: undefined subcommand: "%s"', args[1]), user_peer_id)
         end
     end
 end
@@ -28,21 +28,15 @@ end
 
 function execList(user_peer_id, is_admin, is_auth, args)
     if #args > 2 then
-        server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
         return
     end
 
     local num = 5
     if #args == 2 then
         num = tonumber(args[2])
-        if num == fail then
-            server.announce(getAnnounceName(), string.format('expected number, got "%s"', args[2]), user_peer_id)
-            return
-        elseif num < 0 then
-            server.announce(getAnnounceName(), string.format('expected positive number, got "%s"', args[2]), user_peer_id)
-            return
-        elseif math.floor(num) ~= num then
-            server.announce(getAnnounceName(), string.format('expected integer, got "%s"', args[2]), user_peer_id)
+        if num == fail or num < 0 or math.floor(num) ~= num then
+            server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[2]), user_peer_id)
             return
         end
     end
@@ -63,25 +57,25 @@ end
 
 function execSet(user_peer_id, is_admin, is_auth, args)
     if #args > 2 then
-        server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
         return
     end
 
     local mark = nil
     if #args == 2 then
         local vehicle_id = tonumber(args[2])
-        if vehicle_id == fail then
-            server.announce(getAnnounceName(), string.format('expected number, got "%s"', args[2]), user_peer_id)
+        if vehicle_id == fail or vehicle_id < 0 or math.floor(vehicle_id) ~= vehicle_id then
+            server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
             return
         end
         mark = getVehicleInfo(vehicle_id)
         if mark == nil then
-            server.announce(getAnnounceName(), string.format('vehicle_id of a non-existent vehicle: %d', vehicle_id), user_peer_id)
+            server.announce(getAnnounceName(), string.format('error: the vehicle does not exist: %d', vehicle_id), user_peer_id)
             return
         end
     else
         if #g_savedata['list'] <= 0 then
-            server.announce(getAnnounceName(), 'no vehicle spawned yet', user_peer_id)
+            server.announce(getAnnounceName(), 'error: no vehicle spawned yet', user_peer_id)
             return
         end
         mark = g_savedata['list'][#g_savedata['list']]
@@ -92,7 +86,7 @@ end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
     if #args > 1 then
-        server.announce(getAnnounceName(), 'too many arguments', user_peer_id)
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
         return
     end
     g_savedata['mark'] = nil
