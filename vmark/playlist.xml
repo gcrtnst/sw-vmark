@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<playlist path_id="" folder_path="" file_store="4" name="Vehicle Mark">
+<playlist path_id="app_data/data/missions/vmark" folder_path="data/missions/vmark" file_store="4" name="Vehicle Mark">
 	<locations location_id_counter="0" component_id_counter="0">
 		<locations/>
 	</locations>
