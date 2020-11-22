@@ -50,11 +50,11 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local msg = {}
     for i = math.max(1, #g_savedata['list'] - num + 1), #g_savedata['list'] do
         table.insert(msg, string.format(
-            '[%d]%s (spawned %s ago by %s)',
+            'v%3d %s @%s "%s"',
             g_savedata['list'][i]['vehicle_id'],
-            g_savedata['list'][i]['vehicle_display_name'],
             formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
-            g_savedata['list'][i]['peer_display_name']
+            g_savedata['list'][i]['peer_display_name'],
+            g_savedata['list'][i]['vehicle_display_name']
         ))
     end
     msg = table.concat(msg, '\n')
@@ -106,10 +106,10 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
-    info['vehicle_display_name'] = is_success and vehicle_name or 'unnamed vehicle'
+    info['vehicle_display_name'] = is_success and vehicle_name or '[unnamed vehicle]'
     local peer_name, is_success = server.getPlayerName(peer_id)
     info['peer_name'] = is_success and peer_name or nil
-    info['peer_display_name'] = is_success and peer_name or 'script'
+    info['peer_display_name'] = is_success and peer_name or '[script]'
 
     table.insert(g_savedata['list'], info)
     while #g_savedata['list'] > 1024 do
@@ -168,9 +168,9 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 3 then
+    if g_savedata['version'] ~= 4 then
         g_savedata = {
-            ['version'] = 3,
+            ['version'] = 4,
             ['time'] = 0,
             ['ui_id'] = server.getMapID(),
             ['list'] = {}
@@ -187,7 +187,7 @@ end
 function getPlayerDisplayName(peer_id)
     local peer_name, is_success = server.getPlayerName(peer_id)
     if not is_success then
-        return 'someone'
+        return '[someone]'
     end
     return peer_name
 end
@@ -206,35 +206,23 @@ function getVehicleInfo(vehicle_id)
 
     local info = {
         ['vehicle_id'] = vehicle_id,
-        ['peer_display_name'] = 'someone'
+        ['peer_display_name'] = '[someone]'
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
-    info['vehicle_display_name'] = is_success and vehicle_name or 'unnamed vehicle'
+    info['vehicle_display_name'] = is_success and vehicle_name or '[unnamed vehicle]'
     return info
 end
 
 function formatTicks(ticks)
-    if ticks < 2 then
-        return string.format('%d', ticks) .. ' tick'
-    elseif ticks < 60 then
-        return string.format('%d', ticks) .. ' ticks'
-    elseif ticks < 120 then
-        return '1 second'
-    elseif ticks < 3600 then
-        return string.format('%d', ticks // 60) .. ' seconds'
-    elseif ticks < 7200 then
-        return '1 minute'
+    if ticks < 3600 then
+        return string.format('%ds', ticks // 60)
     elseif ticks < 216000 then
-        return string.format('%d', ticks // 3600) .. ' minutes'
-    elseif ticks < 432000 then
-        return '1 hour'
+        return string.format('%dm', ticks // 3600)
     elseif ticks < 5184000 then
-        return string.format('%d', ticks // 216000) .. ' hours'
-    elseif ticks < 10368000 then
-        return '1 day'
+        return string.format('%dh', ticks // 216000)
     end
-    return string.format('%d', ticks // 5184000) .. ' days'
+    return string.format('%dd', ticks // 5184000)
 end
 
 function formatDistance(dist)
