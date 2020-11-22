@@ -22,7 +22,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
 end
 
 function execHelp(user_peer_id, is_admin, is_auth, args)
-    server.announce( getAnnounceName(),
+    server.announce(getAnnounceName(),
         g_cmd .. ' list [num]\n' ..
         g_cmd .. ' set [vehicle_id]\n' ..
         g_cmd .. ' clear',
