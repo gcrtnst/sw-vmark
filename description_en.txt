@@ -1,4 +1,4 @@
-This is a custom command that displays the vehicle's spawn position in view or on a map.
+A custom command to display the vehicle position in view or on a map.
 I am creating this for the main purpose of cheating in search missions.
 
 ■Install
