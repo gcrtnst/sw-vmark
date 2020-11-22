@@ -110,11 +110,7 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local peer_name, is_success = server.getPlayerName(peer_id)
     info['peer_name'] = is_success and peer_name or nil
     info['peer_display_name'] = is_success and peer_name or '[script]'
-
     table.insert(g_savedata['list'], info)
-    while #g_savedata['list'] > 1024 do
-        table.remove(g_savedata['list'], 1)
-    end
 end
 
 function onTick(game_ticks)
