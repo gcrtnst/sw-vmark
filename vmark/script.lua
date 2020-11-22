@@ -32,15 +32,14 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                 end
             end
 
-            local list = loadList()
             local msg = {}
-            for i = math.max(1, #list - num + 1), #list do
+            for i = math.max(1, #g_savedata['list'] - num + 1), #g_savedata['list'] do
                 table.insert(msg, string.format(
                     '[%d]%s (spawned %s ago by %s)',
-                    list[i]['vehicle_id'],
-                    list[i]['vehicle_display_name'],
-                    formatTicks(g_savedata['time'] - list[i]['spawn_time']),
-                    list[i]['peer_display_name']
+                    g_savedata['list'][i]['vehicle_id'],
+                    g_savedata['list'][i]['vehicle_display_name'],
+                    formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
+                    g_savedata['list'][i]['peer_display_name']
                 ))
             end
             msg = table.concat(msg, '\n')
@@ -52,7 +51,6 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                 return
             end
 
-            local list = loadList()
             local mark = nil
             if #args == 2 then
                 local vehicle_id = tonumber(args[2])
@@ -66,11 +64,11 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
                     return
                 end
             else
-                if #list <= 0 then
+                if #g_savedata['list'] <= 0 then
                     server.announce(getPlaylistNameCurrent(), 'no vehicle spawned yet', user_peer_id)
                     return
                 end
-                mark = list[#list]
+                mark = g_savedata['list'][#g_savedata['list']]
             end
             g_savedata['mark'] = mark
             server.announce(getPlaylistNameCurrent(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_display_name']))
@@ -102,26 +100,23 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     info['peer_name'] = is_success and peer_name or nil
     info['peer_display_name'] = is_success and peer_name or 'script'
 
-    local list = loadList()
-    table.insert(list, info)
-    while #list > 1024 do
-        table.remove(list, 1)
+    table.insert(g_savedata['list'], info)
+    while #g_savedata['list'] > 1024 do
+        table.remove(g_savedata['list'], 1)
     end
-    saveList(list)
 end
 
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
-    local old_list = loadList()
-    local new_list = {}
-    for _, info in ipairs(old_list) do
+    local list = {}
+    for _, info in ipairs(g_savedata['list']) do
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
-            table.insert(new_list, info)
+            table.insert(list, info)
         end
     end
-    saveList(new_list)
+    g_savedata['list'] = list
 
     server.removeMapObject(-1, g_savedata['ui_id'])
     if g_savedata['mark'] ~= nil then
@@ -162,9 +157,9 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 2 then
+    if g_savedata['version'] ~= 3 then
         g_savedata = {
-            ['version'] = 2,
+            ['version'] = 3,
             ['time'] = 0,
             ['ui_id'] = server.getMapID(),
             ['list'] = {}
@@ -187,8 +182,7 @@ function getPlayerDisplayName(peer_id)
 end
 
 function getVehicleInfo(vehicle_id)
-    local list = loadList()
-    for _, info in ipairs(list) do
+    for _, info in ipairs(g_savedata['list']) do
         if info['vehicle_id'] == vehicle_id then
             return info
         end
@@ -207,24 +201,6 @@ function getVehicleInfo(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or 'unnamed vehicle'
     return info
-end
-
-function loadList()
-    local list = {}
-    for i, item in pairs(g_savedata['list']) do
-        i = tonumber(i)
-        if i ~= fail then
-            list[i] = item
-        end
-    end
-    return list
-end
-
-function saveList(list)
-    g_savedata['list'] = {}
-    for i, value in ipairs(list) do
-        g_savedata['list'][tostring(i)] = value
-    end
 end
 
 function formatTicks(ticks)
