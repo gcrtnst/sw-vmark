@@ -2,6 +2,10 @@ g_cmd = '?vmark'
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...)
     local args = {...}
+    if #args > 0 and args[#args] == '' then
+        table.remove(args, #args)
+    end
+
     if cmd == g_cmd then
         if #args <= 0 or args[1] == 'help' then
             execHelp(user_peer_id, is_admin, is_auth, args)
