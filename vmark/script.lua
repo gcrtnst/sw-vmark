@@ -48,7 +48,8 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local msg = {}
     for i = math.max(1, #g_savedata['vehicles'] - num + 1), #g_savedata['vehicles'] do
         table.insert(msg, string.format(
-            'v%3d %s @%s "%s"',
+            '%s %3d %s @%s "%s"',
+            g_savedata['vehicles'][i]['mark'] and 'M' or '-',
             g_savedata['vehicles'][i]['vehicle_id'],
             formatTicks(g_savedata['time'] - g_savedata['vehicles'][i]['spawn_time']),
             g_savedata['vehicles'][i]['peer_name'],
