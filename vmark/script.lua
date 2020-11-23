@@ -65,15 +65,15 @@ function execSet(user_peer_id, is_admin, is_auth, args)
         return
     end
 
-    local mark = nil
+    local info = nil
     if #args == 2 then
         local vehicle_id = tonumber(args[2])
         if vehicle_id == fail or vehicle_id < 0 or math.floor(vehicle_id) ~= vehicle_id then
             server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
             return
         end
-        mark = getVehicleInfo(vehicle_id)
-        if mark == nil then
+        info = getVehicleInfo(vehicle_id)
+        if info == nil then
             server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
             return
         end
@@ -82,10 +82,10 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             server.announce(getAnnounceName(), 'error: no vehicle spawned yet', user_peer_id)
             return
         end
-        mark = g_savedata['vehicles'][#g_savedata['vehicles']]
+        info = g_savedata['vehicles'][#g_savedata['vehicles']]
     end
-    g_savedata['mark'] = mark
-    server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), mark['vehicle_name']))
+    info['mark'] = true
+    server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
@@ -93,7 +93,9 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
         return
     end
-    g_savedata['mark'] = nil
+    for _, info in pairs(g_savedata['vehicles']) do
+        info['mark'] = false
+    end
     server.announce(getAnnounceName(), string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
 end
 
@@ -101,6 +103,8 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
+        ['ui_id'] = server.getMapID(),
+        ['mark'] = false
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or '[unnamed vehicle]'
@@ -113,44 +117,49 @@ function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
     local vehicles = {}
+    local despawned_vehicles = {}
     for _, info in ipairs(g_savedata['vehicles']) do
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
             table.insert(vehicles, info)
+        else
+            table.insert(despawned_vehicles, info)
         end
     end
     g_savedata['vehicles'] = vehicles
 
-    server.removeMapObject(-1, g_savedata['ui_id'])
-    if g_savedata['mark'] ~= nil then
-        local vehicle_matrix, is_success = server.getVehiclePos(g_savedata['mark']['vehicle_id'])
-        if not is_success then
-            server.announce(getAnnounceName(), string.format('%s despawned', g_savedata['mark']['vehicle_name']))
-            g_savedata['mark'] = nil
-        else
+    for _, info in pairs(vehicles) do
+        if info['mark'] then
+            local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-            server.addMapObject(-1, g_savedata['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, g_savedata['mark']['vehicle_name'], 0, '')
+            server.addMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
             for _, player in pairs(server.getPlayers()) do
-                local text = g_savedata['mark']['vehicle_name']
+                local text = info['vehicle_name']
                 local peer_matrix, is_success = server.getPlayerPos(player['id'])
                 if is_success then
                     text = text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
                 end
-                server.setPopup(player['id'], g_savedata['ui_id'], getAnnounceName(), true, text, vehicle_x, vehicle_y, vehicle_z, 0)
+                server.setPopup(player['id'], info['ui_id'], getAnnounceName(), true, text, vehicle_x, vehicle_y, vehicle_z, 0)
             end
+        else
+            server.removeMapObject(-1, info['ui_id'])
+            server.removePopup(-1, info['ui_id'])
         end
     end
-    if g_savedata['mark'] == nil then
-        server.removePopup(-1, g_savedata['ui_id'])
+
+    for _, info in pairs(despawned_vehicles) do
+        if info['mark'] then
+            server.announce(getAnnounceName(), string.format('%s despawned', info['vehicle_name']))
+        end
+        server.removeMapID(-1, info['ui_id'])
     end
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 6 then
+    if g_savedata['version'] ~= 7 then
         g_savedata = {
-            ['version'] = 6,
+            ['version'] = 7,
             ['time'] = 0,
-            ['ui_id'] = server.getMapID(),
             ['vehicles'] = {}
         }
     end
