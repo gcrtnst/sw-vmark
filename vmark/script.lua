@@ -135,18 +135,17 @@ function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
     local vehicles = {}
-    local despawned_vehicles = {}
     for _, info in ipairs(g_savedata['vehicles']) do
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
             table.insert(vehicles, info)
         else
-            table.insert(despawned_vehicles, info)
+            server.removeMapID(-1, info['ui_id'])
         end
     end
     g_savedata['vehicles'] = vehicles
 
-    for _, info in pairs(vehicles) do
+    for _, info in pairs(g_savedata['vehicles']) do
         if info['mark'] then
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
@@ -164,13 +163,6 @@ function onTick(game_ticks)
             server.removeMapObject(-1, info['ui_id'])
             server.removePopup(-1, info['ui_id'])
         end
-    end
-
-    for _, info in pairs(despawned_vehicles) do
-        if info['mark'] then
-            server.announce(getAnnounceName(), string.format('%s despawned', info['vehicle_name']))
-        end
-        server.removeMapID(-1, info['ui_id'])
     end
 end
 
