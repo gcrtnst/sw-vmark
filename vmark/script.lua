@@ -121,8 +121,8 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
-        ['ui_id'] = server.getMapID(),
-        ['mark'] = false
+        ['mark'] = false,
+        ['ui_id'] = nil
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or '[unnamed vehicle]'
@@ -139,7 +139,7 @@ function onTick(game_ticks)
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
             table.insert(list, info)
-        else
+        elseif not is_success and info['ui_id'] ~= nil then
             server.removeMapID(-1, info['ui_id'])
         end
     end
@@ -147,6 +147,9 @@ function onTick(game_ticks)
 
     for _, info in pairs(g_savedata['list']) do
         if info['mark'] then
+            if info['ui_id'] == nil then
+                info['ui_id'] = server.getMapID()
+            end
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
             server.removeMapObject(-1, info['ui_id'])
@@ -159,17 +162,17 @@ function onTick(game_ticks)
                 end
                 server.setPopup(player['id'], info['ui_id'], getAnnounceName(), true, text, vehicle_x, vehicle_y, vehicle_z, 0)
             end
-        else
-            server.removeMapObject(-1, info['ui_id'])
-            server.removePopup(-1, info['ui_id'])
+        elseif not info['mark'] and info['ui_id'] ~= nil then
+            server.removeMapID(-1, info['ui_id'])
+            info['ui_id'] = nil
         end
     end
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 8 then
+    if g_savedata['version'] ~= 9 then
         g_savedata = {
-            ['version'] = 8,
+            ['version'] = 9,
             ['time'] = 0,
             ['list'] = {}
         }
