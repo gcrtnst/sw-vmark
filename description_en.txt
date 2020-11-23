@@ -1,36 +1,34 @@
 A custom command to display the vehicle position in view or on a map.
 I am creating this for the main purpose of cheating in search missions.
 
-■Install
-  1. Subscribe this work.
-  2. Create a new save data with "Vehicle Mark" enabled.
-     New Game > Enable Addons > Workshop > Vehicle Mark
+[b]### Install ###[/b]
+1. Subscribe this work.
+2. Create a new world with "Vehicle Mark" enabled.
+   New Game > Enable Addons > Workshop > Vehicle Mark
 
-■Usage
-  You can run this by typing a command into the chat field.
+[b]### Usage ###[/b]
+You can run this by typing a command into the chat field.
 
-  - ?vmark list [num]
-    Lists vehicles that have recently spawned.
-    If [num] is not specified, it shows 10 vehicles.
-    If [num] is specified, it shows the specified number of vehicles.
-    The output will be "[vehicle_id]vehicle_name (spawned spawn_time by peer_name)".
+- [b]?vmark list [NUM][/b]
+Lists vehicles that have recently spawned.
+If NUM is specified, it shows the specified number of vehicles.
+Output format: [b]'mark_exists VEHICLE_ID spawn_time @peer_name "vehicle_name"'[/b]
+Example output 1: [b]'- 3m 150 @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, gcrtnst spawned a vehicle named Kinoko
+Example Output 2: [b]'M 1d 112 @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, vehicle named vehicle_1 spawned by the script
 
-  - ?vmark set [vehicle_id]
-    Mark the spawn position of the vehicle.
-    If [vehicle_id] is not specified, the most recently spawned vehicle is marked.
-    If [vehicle_id] is specified, the vehicle will be marked. vehicle_id can be found in the "?vmark list".
-    In multiplayer, the mark is displayed to all players.
-    You can't mark two or more vehicles at the same time.
+- [b]?vmark set [VEHICLE_ID][/b]
+Mark the spawn position of the vehicle.
+If VEHICLE_ID is not specified, the most recently spawned vehicle is marked.
+In multiplayer, the mark is displayed to all players.
 
-  - ?vmark clear
-    Erase the mark.
+- [b]?vmark clear VEHICLE_ID[/b]
+Erase the mark.
+Specify -1 for VEHICLE_ID to remove all marks.
 
-■Caveats
-  - It has not yet been confirmed to work in multiplayer.
-    This mission was created with multiplayer in mind, but I don't know if it will work properly.
-  - This probably won't work in experimental branch.
+[b]### Caveats ###[/b]
+- This probably won't work in experimental branch.
 
-■Repository
-  https://github.com/gcrtnst/sw-vmark
+[b]### Repository ###[/b]
+https://github.com/gcrtnst/sw-vmark
 
 (Translated using DeepL Translator)

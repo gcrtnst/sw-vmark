@@ -1,39 +1,43 @@
 車両の位置を視界やマップ上に表示するカスタムコマンドです。
 捜索ミッションでのチートを主目的として制作しています。
 
-■インストール
-  1. この作品をサブスクライブしてください。
-  2. "Vehicle Mark" を有効にしたセーブデータを新規作成してください。
-     New Game > Enable Addons > Workshop > Vehicle Mark
+[b]### インストール ###[/b]
+1. この作品をサブスクライブしてください。
+2. "Vehicle Mark" を有効にしたワールドを新規作成してください。
+   New Game > Enable Addons > Workshop > Vehicle Mark
 
-■使い方
-  チャット欄にコマンドを入力することで操作します。
+[b]### 使い方 ###[/b]
+チャット欄にコマンドを入力することで操作します。
 
-  ・?vmark list [num]
-    最近スポーンした車両を一覧表示します。
-    [num] を指定しなかった場合、10台表示します。
-    [num] を指定すると、指定された数だけ表示します。
-    出力は "[vehicle_id]車両名 (spawned スポーン時間 by プレイヤー名)" となります。
+- [b]?vmark list [NUM][/b]
+最近スポーンした車両を一覧表示します。
+NUM で項目数を指定できます。
+出力形式: [b]'マーク有無 VEHICLE_ID スポーン時間 @プレイヤー名 "車両名"'[/b]
+出力例1: [b]'- 3m 150 @gcrtnst "Kinoko"'[/b]: マーク無し、VEHICLE_ID は150、スポーン時刻は3分前、gcrtnst がスポーンさせた、Kinoko という名前の車両
+出力例2: [b]'M 1d 112 @[script] "vehicle_1"'[/b]: マーク有り、VEHICLE_ID は112、スポーン時刻は1日前、スクリプトによってスポーンされた、vehicle_1 という名前の車両
 
-  ・?vmark set [vehicle_id]
-    車両のスポーン位置をマークします。
-    [vehicle_id] を指定しなかった場合、最も最近スポーンした車両をマークします。
-    [vehicle_id] を指定した場合、指定された車両をマークします。vehicle_id は ?vmark list で確認できます。
-    マルチプレイの場合、マークは全員に表示されます。
-    2台以上同時にマークすることは出来ません。
+- [b]?vmark set [VEHICLE_ID][/b]
+車両をマークします。
+VEHICLE_ID を指定しなかった場合、最も最近スポーンした車両をマークします。
+マルチプレイの場合、マークは全員に表示されます。
 
-  ・?vmark clear
-    マークを消します。
+- [b]?vmark clear VEHICLE_ID[/b]
+マークを消します。
+VEHICLE_ID に -1 を指定すると、全てのマークを消します。
 
-■注意点
-  ・マルチプレイでの動作は未確認です。
-    一応マルチプレイも想定して作成していますが、正常動作するかどうか分かりません。
-  ・experimental branch では恐らく動作しません。
+[b]### 注意点 ###[/b]
+- experimental branch では恐らく動作しません。
 
-■利用可否
+[b]### 利用可否 ###[/b]
+これらの作成物は Unlicense でライセンスされています。
+Unlicense はパブリックドメインに非常に近いライセンスですので、
+煮るなり焼くなり好きに使って頂いて問題ないと思います。
 改変　　：○
 二次配布：○
 実況動画：○
 
-■リポジトリ
-  https://github.com/gcrtnst/sw-vmark
+ライセンスの全文はここで確認できます。
+https://github.com/gcrtnst/sw-vmark/blob/main/LICENSE
+
+[b]### リポジトリ ###[/b]
+https://github.com/gcrtnst/sw-vmark
