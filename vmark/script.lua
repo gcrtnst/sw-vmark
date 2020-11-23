@@ -46,14 +46,14 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local msg = {}
-    for i = math.max(1, #g_savedata['vehicles'] - num + 1), #g_savedata['vehicles'] do
+    for i = math.max(1, #g_savedata['list'] - num + 1), #g_savedata['list'] do
         table.insert(msg, string.format(
             '%s %3d %s @%s "%s"',
-            g_savedata['vehicles'][i]['mark'] and 'M' or '-',
-            g_savedata['vehicles'][i]['vehicle_id'],
-            formatTicks(g_savedata['time'] - g_savedata['vehicles'][i]['spawn_time']),
-            g_savedata['vehicles'][i]['peer_name'],
-            g_savedata['vehicles'][i]['vehicle_name']
+            g_savedata['list'][i]['mark'] and 'M' or '-',
+            g_savedata['list'][i]['vehicle_id'],
+            formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
+            g_savedata['list'][i]['peer_name'],
+            g_savedata['list'][i]['vehicle_name']
         ))
     end
     msg = table.concat(msg, '\n')
@@ -79,11 +79,11 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             return
         end
     else
-        if #g_savedata['vehicles'] <= 0 then
+        if #g_savedata['list'] <= 0 then
             server.announce(getAnnounceName(), 'error: no vehicle spawned yet', user_peer_id)
             return
         end
-        info = g_savedata['vehicles'][#g_savedata['vehicles']]
+        info = g_savedata['list'][#g_savedata['list']]
     end
     info['mark'] = true
     server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
@@ -102,7 +102,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     end
 
     if vehicle_id == -1 then
-        for _, info in pairs(g_savedata['vehicles']) do
+        for _, info in pairs(g_savedata['list']) do
             info['mark'] = false
         end
         server.announce(getAnnounceName(), string.format('%s cleared all marks', getPlayerDisplayName(user_peer_id)))
@@ -128,24 +128,24 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     info['vehicle_name'] = is_success and vehicle_name or '[unnamed vehicle]'
     local peer_name, is_success = server.getPlayerName(peer_id)
     info['peer_name'] = is_success and peer_name or '[script]'
-    table.insert(g_savedata['vehicles'], info)
+    table.insert(g_savedata['list'], info)
 end
 
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
-    local vehicles = {}
-    for _, info in ipairs(g_savedata['vehicles']) do
+    local list = {}
+    for _, info in ipairs(g_savedata['list']) do
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
-            table.insert(vehicles, info)
+            table.insert(list, info)
         else
             server.removeMapID(-1, info['ui_id'])
         end
     end
-    g_savedata['vehicles'] = vehicles
+    g_savedata['list'] = list
 
-    for _, info in pairs(g_savedata['vehicles']) do
+    for _, info in pairs(g_savedata['list']) do
         if info['mark'] then
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
@@ -167,11 +167,11 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 7 then
+    if g_savedata['version'] ~= 8 then
         g_savedata = {
-            ['version'] = 7,
+            ['version'] = 8,
             ['time'] = 0,
-            ['vehicles'] = {}
+            ['list'] = {}
         }
     end
 end
@@ -191,7 +191,7 @@ function getPlayerDisplayName(peer_id)
 end
 
 function getVehicleInfo(vehicle_id)
-    for _, info in ipairs(g_savedata['vehicles']) do
+    for _, info in ipairs(g_savedata['list']) do
         if info['vehicle_id'] == vehicle_id then
             return info
         end
