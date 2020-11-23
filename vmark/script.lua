@@ -129,21 +129,7 @@ function onTick(game_ticks)
             g_savedata['mark'] = nil
         else
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-            server.addMapObject(
-                -1,
-                g_savedata['ui_id'],
-                0,
-                2,
-                vehicle_x,
-                vehicle_z,
-                0,
-                0,
-                -1,
-                -1,
-                g_savedata['mark']['vehicle_name'],
-                0,
-                ''
-            )
+            server.addMapObject(-1, g_savedata['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, g_savedata['mark']['vehicle_name'], 0, '')
             for _, player in pairs(server.getPlayers()) do
                 local text = g_savedata['mark']['vehicle_name']
                 local peer_matrix, is_success = server.getPlayerPos(player['id'])
