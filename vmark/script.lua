@@ -74,7 +74,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
         end
         mark = getVehicleInfo(vehicle_id)
         if mark == nil then
-            server.announce(getAnnounceName(), string.format('error: the vehicle does not exist: %d', vehicle_id), user_peer_id)
+            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
             return
         end
     else
@@ -192,20 +192,6 @@ function getVehicleInfo(vehicle_id)
             return info
         end
     end
-
-    local _, is_success = server.getVehiclePos(vehicle_id)
-    if not is_success then
-        return nil
-    end
-
-    local info = {
-        ['vehicle_id'] = vehicle_id,
-        ['peer_display_name'] = '[someone]'
-    }
-    local vehicle_name, is_success = server.getVehicleName(vehicle_id)
-    info['vehicle_name'] = is_success and vehicle_name or nil
-    info['vehicle_display_name'] = is_success and vehicle_name or '[unnamed vehicle]'
-    return info
 end
 
 function formatTicks(ticks)
