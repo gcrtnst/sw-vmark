@@ -25,7 +25,7 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
     server.announce(getAnnounceName(),
         g_cmd .. ' list [num]\n' ..
         g_cmd .. ' set [vehicle_id]\n' ..
-        g_cmd .. ' clear',
+        g_cmd .. ' clear [vehicle_id]',
         user_peer_id
     )
 end
