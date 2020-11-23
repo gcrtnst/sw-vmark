@@ -89,14 +89,31 @@ function execSet(user_peer_id, is_admin, is_auth, args)
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
-    if #args > 1 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+    if #args ~= 2 then
+        server.announce(getAnnounceName(), 'error: missing or extra arguments', user_peer_id)
         return
     end
-    for _, info in pairs(g_savedata['vehicles']) do
-        info['mark'] = false
+
+    local vehicle_id = tonumber(args[2])
+    if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
+        server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+        return
     end
-    server.announce(getAnnounceName(), string.format('%s cleared the mark', getPlayerDisplayName(user_peer_id)))
+
+    if vehicle_id == -1 then
+        for _, info in pairs(g_savedata['vehicles']) do
+            info['mark'] = false
+        end
+        server.announce(getAnnounceName(), string.format('%s cleared all marks', getPlayerDisplayName(user_peer_id)))
+    else
+        local info = getVehicleInfo(vehicle_id)
+        if info == nil then
+            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            return
+        end
+        info['mark'] = false
+        server.announce(getAnnounceName(), string.format('%s cleared mark on %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
+    end
 end
 
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
