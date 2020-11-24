@@ -1,4 +1,5 @@
 g_cmd = '?vmark'
+g_ui_cache = nil
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...)
     local args = {...}
@@ -121,8 +122,8 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
-        ['mark'] = false,
-        ['ui_id'] = nil
+        ['ui_id'] = server.getMapID(),
+        ['mark'] = false
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or '[unnamed vehicle]'
@@ -139,44 +140,229 @@ function onTick(game_ticks)
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
             table.insert(list, info)
-        elseif not is_success and info['ui_id'] ~= nil then
-            server.removeMapID(-1, info['ui_id'])
+        else
+            g_ui_cache.removeMapObject(-1, info['ui_id'])
+            g_ui_cache.removePopup(-1, info['ui_id'])
         end
     end
     g_savedata['list'] = list
 
     for _, info in pairs(g_savedata['list']) do
         if info['mark'] then
-            if info['ui_id'] == nil then
-                info['ui_id'] = server.getMapID()
-            end
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-            server.removeMapObject(-1, info['ui_id'])
-            server.addMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
+            g_ui_cache.removeMapObject(-1, info['ui_id'])
+            g_ui_cache.addMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
             for _, player in pairs(server.getPlayers()) do
                 local text = info['vehicle_name']
                 local peer_matrix, is_success = server.getPlayerPos(player['id'])
                 if is_success then
                     text = text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
                 end
-                server.setPopup(player['id'], info['ui_id'], getAnnounceName(), true, text, vehicle_x, vehicle_y, vehicle_z, 0)
+                g_ui_cache.setPopup(player['id'], info['ui_id'], getAnnounceName(), true, text, vehicle_x, vehicle_y, vehicle_z, 0)
             end
-        elseif not info['mark'] and info['ui_id'] ~= nil then
-            server.removeMapID(-1, info['ui_id'])
-            info['ui_id'] = nil
+        else
+            g_ui_cache.removeMapObject(-1, info['ui_id'])
+            g_ui_cache.removePopup(-1, info['ui_id'])
         end
     end
+
+    g_ui_cache.flush()
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 9 then
+    if g_savedata['version'] ~= 10 then
         g_savedata = {
-            ['version'] = 9,
+            ['version'] = 10,
             ['time'] = 0,
             ['list'] = {}
         }
     end
+
+    g_ui_cache = buildUICache()
+    for _, info in pairs(g_savedata['list']) do
+        server.removeMapObject(-1, info['ui_id'])
+        server.removePopup(-1, info['ui_id'])
+    end
+end
+
+function buildUICache()
+    local ui_cache = {
+        ['_map_object_1'] = {},
+        ['_map_object_2'] = {},
+        ['_popup_1'] = {},
+        ['_popup_2'] = {}
+    }
+
+    function ui_cache.addMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label)
+        for _, peer_id in pairs(getPeerIDList(peer_id)) do
+            local key = string.format('%d,%d', peer_id, ui_id)
+            ui_cache['_map_object_2'][key] = {
+                ['peer_id'] = peer_id,
+                ['ui_id'] = ui_id,
+                ['position_type'] = position_type,
+                ['marker_type'] = marker_type,
+                ['x'] = x,
+                ['z'] = z,
+                ['parent_local_x'] = parent_local_x,
+                ['parent_local_z'] = parent_local_z,
+                ['vehicle_id'] = vehicle_id,
+                ['object_id'] = object_id,
+                ['label'] = label,
+                ['radius'] = radius,
+                ['hover_label'] = hover_label
+            }
+        end
+    end
+
+    function ui_cache.removeMapObject(peer_id, ui_id)
+        if peer_id < 0 then
+            for key, map_object in pairs(ui_cache['_map_object_2']) do
+                if map_object['ui_id'] == ui_id then
+                    ui_cache['_map_object_2'][key] = nil
+                end
+            end
+        else
+            local key = string.format('%d,%d', peer_id, ui_id)
+            ui_cache['_map_object_2'][key] = nil
+        end
+    end
+
+    function ui_cache.setPopup(peer_id, ui_id, name, is_show, text, x, y, z, render_distance)
+        for _, peer_id in pairs(getPeerIDList(peer_id)) do
+            local key = string.format('%d,%d', peer_id, ui_id)
+            ui_cache['_popup_2'][key] = {
+                ['peer_id'] = peer_id,
+                ['ui_id'] = ui_id,
+                ['name'] = name,
+                ['is_show'] = is_show,
+                ['text'] = text,
+                ['x'] = x,
+                ['y'] = y,
+                ['z'] = z,
+                ['render_distance'] = render_distance
+            }
+        end
+    end
+
+    function ui_cache.removePopup(peer_id, ui_id)
+        if peer_id < 0 then
+            for key, popup in pairs(ui_cache['_popup_2']) do
+                if popup['ui_id'] == ui_id then
+                    ui_cache['_popup_2'][key] = nil
+                end
+            end
+        else
+            local key = string.format('%d,%d', peer_id, ui_id)
+            ui_cache['_popup_2'][key] = nil
+        end
+    end
+
+    function ui_cache.flush()
+        ui_cache.flushMapObject()
+        ui_cache.flushPopup()
+    end
+
+    function ui_cache.flushMapObject()
+        for key, map_object in pairs(ui_cache['_map_object_1']) do
+            if not getPlayerExists(map_object['peer_id']) then
+                ui_cache['_map_object_1'][key] = nil
+            end
+        end
+        for key, map_object in pairs(ui_cache['_map_object_2']) do
+            if not getPlayerExists(map_object['peer_id']) then
+                ui_cache['_map_object_2'][key] = nil
+            end
+        end
+
+        for key, map_object in pairs(ui_cache['_map_object_1']) do
+            if ui_cache['_map_object_2'][key] == nil then
+                server.removeMapObject(map_object['peer_id'], map_object['ui_id'])
+            end
+        end
+
+        for key, map_object_2 in pairs(ui_cache['_map_object_2']) do
+            local map_object_1 = ui_cache['_map_object_1'][key]
+            if map_object_1 == nil or
+                map_object_2['position_type'] ~= map_object_1['position_type'] or
+                map_object_2['marker_type'] ~= map_object_1['marker_type'] or
+                map_object_2['x'] ~= map_object_1['x'] or
+                map_object_2['z'] ~= map_object_1['z'] or
+                map_object_2['parent_local_x'] ~= map_object_1['parent_local_x'] or
+                map_object_2['parent_local_z'] ~= map_object_1['parent_local_z'] or
+                map_object_2['vehicle_id'] ~= map_object_1['vehicle_id'] or
+                map_object_2['object_id'] ~= map_object_1['object_id'] or
+                map_object_2['label'] ~= map_object_1['label'] or
+                map_object_2['radius'] ~= map_object_1['radius'] or
+                map_object_2['hover_label'] ~= map_object_1['hover_label'] then
+                server.removeMapObject(map_object_2['peer_id'], map_object_2['ui_id'])
+                server.addMapObject(
+                    map_object_2['peer_id'],
+                    map_object_2['ui_id'],
+                    map_object_2['position_type'],
+                    map_object_2['marker_type'],
+                    map_object_2['x'],
+                    map_object_2['z'],
+                    map_object_2['parent_local_x'],
+                    map_object_2['parent_local_z'],
+                    map_object_2['vehicle_id'],
+                    map_object_2['object_id'],
+                    map_object_2['label'],
+                    map_object_2['radius'],
+                    map_object_2['hover_label']
+                )
+            end
+        end
+
+        ui_cache['_map_object_1'] = copyTable(ui_cache['_map_object_2'])
+    end
+
+    function ui_cache.flushPopup()
+        for key, map_object in pairs(ui_cache['_popup_1']) do
+            if not getPlayerExists(map_object['peer_id']) then
+                ui_cache['_popup_1'][key] = nil
+            end
+        end
+        for key, map_object in pairs(ui_cache['_popup_2']) do
+            if not getPlayerExists(map_object['peer_id']) then
+                ui_cache['_popup_2'][key] = nil
+            end
+        end
+
+        for key, popup in pairs(ui_cache['_popup_1']) do
+            if ui_cache['_popup_2'][key] == nil then
+                server.removePopup(popup['peer_id'], popup['ui_id'])
+            end
+        end
+
+        for key, popup_2 in pairs(ui_cache['_popup_2']) do
+            local popup_1 = ui_cache['_popup_1'][key]
+            if popup_1 == nil or
+                popup_2['name'] ~= popup_1['name'] or
+                popup_2['is_show'] ~= popup_1['is_show'] or
+                popup_2['text'] ~= popup_1['text'] or
+                popup_2['x'] ~= popup_1['x'] or
+                popup_2['y'] ~= popup_1['y'] or
+                popup_2['z'] ~= popup_1['z'] or
+                popup_2['render_distance'] ~= popup_1['render_distance'] then
+                server.setPopup(
+                    popup_2['peer_id'],
+                    popup_2['ui_id'],
+                    popup_2['name'],
+                    popup_2['is_show'],
+                    popup_2['text'],
+                    popup_2['x'],
+                    popup_2['y'],
+                    popup_2['z'],
+                    popup_2['render_distance']
+                )
+            end
+        end
+
+        ui_cache['_popup_1'] = copyTable(ui_cache['_popup_2'])
+    end
+
+    return ui_cache
 end
 
 function getAnnounceName()
@@ -185,12 +371,29 @@ function getAnnounceName()
     return string.format('[%s]', playlist_data['name'])
 end
 
+function getPlayerExists(peer_id)
+    local _, is_success = server.getPlayerName(peer_id)
+    return is_success
+end
+
 function getPlayerDisplayName(peer_id)
     local peer_name, is_success = server.getPlayerName(peer_id)
     if not is_success then
         return '[someone]'
     end
     return peer_name
+end
+
+function getPeerIDList(peer_id)
+    local peer_id_list = {}
+    if peer_id < 0 then
+        for _, player in pairs(server.getPlayers()) do
+            table.insert(peer_id_list, player['id'])
+        end
+    else
+        table.insert(peer_id_list, peer_id)
+    end
+    return peer_id_list
 end
 
 function getVehicleInfo(vehicle_id)
@@ -217,4 +420,12 @@ function formatDistance(dist)
         return string.format('%dm', math.floor(dist))
     end
     return string.format('%.1fkm', dist/1000)
+end
+
+function copyTable(tbl)
+    local new = {}
+    for key, value in pairs(tbl) do
+        new[key] = value
+    end
+    return new
 end
