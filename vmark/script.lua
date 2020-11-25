@@ -152,7 +152,7 @@ function onTick(game_ticks)
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
             g_ui_cache.removeMapObject(-1, info['ui_id'])
-            g_ui_cache.addMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
+            g_ui_cache.setMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
             for _, player in pairs(server.getPlayers()) do
                 local text = info['vehicle_name']
                 local peer_matrix, is_success = server.getPlayerPos(player['id'])
@@ -202,7 +202,7 @@ function buildUICache()
         ['_popup_2'] = {}
     }
 
-    function ui_cache.addMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label)
+    function ui_cache.setMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label)
         for _, peer_id in pairs(getPeerIDList(peer_id)) do
             local key = string.format('%d,%d', peer_id, ui_id)
             ui_cache['_map_object_2'][key] = {
