@@ -186,6 +186,14 @@ function onCreate(is_world_create)
     end
 end
 
+function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+    g_ui_cache.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+end
+
+function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+    g_ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+end
+
 function buildUICache()
     local ui_cache = {
         ['_map_object_1'] = {},
@@ -258,23 +266,49 @@ function buildUICache()
         end
     end
 
+    function ui_cache.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+        for key, map_object in pairs(ui_cache['_map_object_1']) do
+            if map_object['peer_id'] == peer_id then
+                ui_cache['_map_object_1'][key] = nil
+            end
+        end
+
+        for key, popup in pairs(ui_cache['_popup_1']) do
+            if popup['peer_id'] == peer_id then
+                ui_cache['_popup_1'][key] = nil
+            end
+        end
+    end
+
+    function ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+        for key, map_object in pairs(ui_cache['_map_object_1']) do
+            if map_object['peer_id'] == peer_id then
+                ui_cache['_map_object_1'][key] = nil
+            end
+        end
+        for key, map_object in pairs(ui_cache['_map_object_2']) do
+            if map_object['peer_id'] == peer_id then
+                ui_cache['_map_object_2'][key] = nil
+            end
+        end
+        for key, popup in pairs(ui_cache['_popup_1']) do
+            if popup['peer_id'] == peer_id then
+                ui_cache['_popup_1'][key] = nil
+            end
+        end
+        for key, popup in pairs(ui_cache['_popup_2']) do
+            if popup['peer_id'] == peer_id then
+                ui_cache['_popup_2'][key] = nil
+            end
+        end
+    end
+
     function ui_cache.flush()
         ui_cache.flushMapObject()
         ui_cache.flushPopup()
     end
 
     function ui_cache.flushMapObject()
-        for key, map_object in pairs(ui_cache['_map_object_1']) do
-            if not getPlayerExists(map_object['peer_id']) then
-                ui_cache['_map_object_1'][key] = nil
-            end
-        end
-        for key, map_object in pairs(ui_cache['_map_object_2']) do
-            if not getPlayerExists(map_object['peer_id']) then
-                ui_cache['_map_object_2'][key] = nil
-            end
-        end
-
         for key, map_object in pairs(ui_cache['_map_object_1']) do
             if ui_cache['_map_object_2'][key] == nil then
                 server.removeMapObject(map_object['peer_id'], map_object['ui_id'])
@@ -318,17 +352,6 @@ function buildUICache()
     end
 
     function ui_cache.flushPopup()
-        for key, map_object in pairs(ui_cache['_popup_1']) do
-            if not getPlayerExists(map_object['peer_id']) then
-                ui_cache['_popup_1'][key] = nil
-            end
-        end
-        for key, map_object in pairs(ui_cache['_popup_2']) do
-            if not getPlayerExists(map_object['peer_id']) then
-                ui_cache['_popup_2'][key] = nil
-            end
-        end
-
         for key, popup in pairs(ui_cache['_popup_1']) do
             if ui_cache['_popup_2'][key] == nil then
                 server.removePopup(popup['peer_id'], popup['ui_id'])
