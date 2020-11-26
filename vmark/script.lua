@@ -269,12 +269,14 @@ function buildUICache()
     function ui_cache.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
         for key, map_object in pairs(ui_cache['_map_object_1']) do
             if map_object['peer_id'] == peer_id then
+                server.removeMapObject(map_object['peer_id'], map_object['ui_id'])
                 ui_cache['_map_object_1'][key] = nil
             end
         end
 
         for key, popup in pairs(ui_cache['_popup_1']) do
             if popup['peer_id'] == peer_id then
+                server.removePopup(popup['peer_id'], popup['ui_id'])
                 ui_cache['_popup_1'][key] = nil
             end
         end
