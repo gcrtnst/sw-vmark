@@ -16,6 +16,10 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             execSet(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clear' then
             execClear(user_peer_id, is_admin, is_auth, args)
+        elseif args[1] == 'hide' then
+            execHide(user_peer_id, is_admin, is_auth, args)
+        elseif args[1] == 'show' then
+            execShow(user_peer_id, is_admin, is_auth, args)
         else
             server.announce(getAnnounceName(), string.format('error: undefined subcommand: "%s"', args[1]), user_peer_id)
         end
@@ -26,7 +30,9 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
     server.announce(getAnnounceName(),
         g_cmd .. ' list [NUM]\n' ..
         g_cmd .. ' set [VEHICLE_ID]\n' ..
-        g_cmd .. ' clear VEHICLE_ID',
+        g_cmd .. ' clear VEHICLE_ID\n' ..
+        g_cmd .. ' hide\n' ..
+        g_cmd .. ' show',
         user_peer_id
     )
 end
@@ -118,6 +124,24 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     end
 end
 
+function execHide(user_peer_id, is_admin, is_auth, args)
+    if #args > 1 then
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        return
+    end
+    g_savedata['hide'][user_peer_id] = true
+    server.announce(getAnnounceName(), 'mark is now invisible', user_peer_id)
+end
+
+function execShow(user_peer_id, is_admin, is_auth, args)
+    if #args > 1 then
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        return
+    end
+    g_savedata['hide'][user_peer_id] = nil
+    server.announce(getAnnounceName(), 'mark is now visible', user_peer_id)
+end
+
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
@@ -166,15 +190,23 @@ function onTick(game_ticks)
         end
     end
 
+    for peer_id, _ in pairs(g_savedata['hide']) do
+        for _, info in pairs(g_savedata['list']) do
+            g_ui_cache.removeMapObject(peer_id, info['ui_id'])
+            g_ui_cache.removePopup(peer_id, info['ui_id'])
+        end
+    end
+
     g_ui_cache.flush()
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 10 then
+    if g_savedata['version'] ~= 11 then
         g_savedata = {
-            ['version'] = 10,
+            ['version'] = 11,
             ['time'] = 0,
-            ['list'] = {}
+            ['list'] = {},
+            ['hide'] = {}
         }
     end
 
@@ -190,6 +222,7 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+    g_savedata['hide'][peer_id] = nil
     g_ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
 
