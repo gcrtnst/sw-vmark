@@ -1,4 +1,5 @@
 g_cmd = '?vmark'
+g_hide = {}
 g_ui_cache = nil
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...)
@@ -129,7 +130,7 @@ function execHide(user_peer_id, is_admin, is_auth, args)
         server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
         return
     end
-    g_savedata['hide'][user_peer_id] = true
+    g_hide[user_peer_id] = true
     server.announce(getAnnounceName(), 'mark is now invisible', user_peer_id)
 end
 
@@ -138,7 +139,7 @@ function execShow(user_peer_id, is_admin, is_auth, args)
         server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
         return
     end
-    g_savedata['hide'][user_peer_id] = nil
+    g_hide[user_peer_id] = nil
     server.announce(getAnnounceName(), 'mark is now visible', user_peer_id)
 end
 
@@ -190,7 +191,7 @@ function onTick(game_ticks)
         end
     end
 
-    for peer_id, _ in pairs(g_savedata['hide']) do
+    for peer_id, _ in pairs(g_hide) do
         for _, info in pairs(g_savedata['list']) do
             g_ui_cache.removeMapObject(peer_id, info['ui_id'])
             g_ui_cache.removePopup(peer_id, info['ui_id'])
@@ -201,12 +202,11 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 11 then
+    if g_savedata['version'] ~= 12 then
         g_savedata = {
-            ['version'] = 11,
+            ['version'] = 12,
             ['time'] = 0,
             ['list'] = {},
-            ['hide'] = {}
         }
     end
 
@@ -222,7 +222,7 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
-    g_savedata['hide'][peer_id] = nil
+    g_hide[peer_id] = nil
     g_ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
 
