@@ -151,7 +151,7 @@ function onTick(game_ticks)
         if info['mark'] then
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-            g_ui_cache.setMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
+            g_ui_cache.setMapObject(-1, info['ui_id'], 1, 2, 0, 0, 0, 0, info['vehicle_id'], -1, info['vehicle_name'], 0, '')
             for _, player in pairs(server.getPlayers()) do
                 local text = info['vehicle_name']
                 local peer_matrix, is_success = server.getPlayerPos(player['id'])
