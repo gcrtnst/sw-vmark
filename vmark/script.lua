@@ -428,11 +428,6 @@ function getAnnounceName()
     return string.format('[%s]', playlist_data['name'])
 end
 
-function getPlayerExists(peer_id)
-    local _, is_success = server.getPlayerName(peer_id)
-    return is_success
-end
-
 function getPlayerDisplayName(peer_id)
     local peer_name, is_success = server.getPlayerName(peer_id)
     if not is_success then
