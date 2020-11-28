@@ -53,16 +53,21 @@ function execList(user_peer_id, is_admin, is_auth, args)
         end
     end
 
+    local function formatMessage(info)
+        return string.format(
+            '%s %3d %s @%s "%s"',
+            info['mark'] and 'M' or '-',
+            info['vehicle_id'],
+            formatTicks(g_savedata['time'] - info['spawn_time']),
+            info['peer_name'],
+            info['vehicle_name']
+        )
+    end
+
     local msg = {}
     for i = #g_savedata['list'], 1, -1 do
         if g_savedata['list'][i]['mark'] then
-            table.insert(msg, string.format(
-                'M %3d %s @%s "%s"',
-                g_savedata['list'][i]['vehicle_id'],
-                formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
-                g_savedata['list'][i]['peer_name'],
-                g_savedata['list'][i]['vehicle_name']
-            ))
+            table.insert(msg, formatMessage(g_savedata['list'][i]))
         end
     end
     for i = #g_savedata['list'], 1, -1 do
@@ -70,13 +75,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
             break
         end
         if not g_savedata['list'][i]['mark'] then
-            table.insert(msg, string.format(
-                '- %3d %s @%s "%s"',
-                g_savedata['list'][i]['vehicle_id'],
-                formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
-                g_savedata['list'][i]['peer_name'],
-                g_savedata['list'][i]['vehicle_name']
-            ))
+            table.insert(msg, formatMessage(g_savedata['list'][i]))
         end
     end
     msg = reverseTable(msg)
