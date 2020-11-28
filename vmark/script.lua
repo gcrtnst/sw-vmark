@@ -57,12 +57,21 @@ function execList(user_peer_id, is_admin, is_auth, args)
         end
     end
 
-    local function formatMessage(info)
-        local dist = '???km'
+    local function getVehicleDist(info)
         local player_matrix, is_success_player = server.getPlayerPos(user_peer_id)
         local vehicle_matrix, is_success_vehicle = server.getVehiclePos(info['vehicle_id'])
-        if is_success_player and is_success_vehicle then
-            dist = string.format('%.1fkm', matrix.distance(player_matrix, vehicle_matrix)/1000)
+        if not is_success_player or not is_success_vehicle then
+            return nil
+        end
+        return matrix.distance(player_matrix, vehicle_matrix)
+    end
+
+    local function formatMessage(info)
+        local dist = getVehicleDist(info)
+        if dist ~= nil then
+            dist = string.format('%.1fkm', dist/1000)
+        else
+            dist = '???km'
         end
 
         return string.format(
