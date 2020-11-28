@@ -54,11 +54,19 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local function formatMessage(info)
+        local dist = '???km'
+        local player_matrix, is_success_player = server.getPlayerPos(user_peer_id)
+        local vehicle_matrix, is_success_vehicle = server.getVehiclePos(info['vehicle_id'])
+        if is_success_player and is_success_vehicle then
+            dist = string.format('%.1fkm', matrix.distance(player_matrix, vehicle_matrix)/1000)
+        end
+
         return string.format(
-            '%s %3d %s @%s "%s"',
+            '%s %3d %s %s @%s "%s"',
             info['mark'] and 'M' or '-',
             info['vehicle_id'],
             formatTicks(g_savedata['time'] - info['spawn_time']),
+            dist,
             info['peer_name'],
             info['vehicle_name']
         )
