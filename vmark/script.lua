@@ -29,7 +29,7 @@ end
 
 function execHelp(user_peer_id, is_admin, is_auth, args)
     server.announce(getAnnounceName(),
-        g_cmd .. ' list [NUM]\n' ..
+        g_cmd .. ' list [OPTIONS]\n' ..
         g_cmd .. ' set [VEHICLE_ID]\n' ..
         g_cmd .. ' clear VEHICLE_ID\n' ..
         g_cmd .. ' hide\n' ..
@@ -39,16 +39,20 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
 end
 
 function execList(user_peer_id, is_admin, is_auth, args)
-    if #args > 2 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
-        return
-    end
-
     local num = 5
-    if #args == 2 then
-        num = tonumber(args[2])
-        if num == fail or num < 0 or math.floor(num) ~= num then
-            server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[2]), user_peer_id)
+    for i = 2, #args, 2 do
+        if args[i] == '-num' then
+            if i + 1 > #args then
+                server.announce(getAnnounceName(), 'error: missing argument to "-num"', user_peer_id)
+                return
+            end
+            num = tonumber(args[i + 1])
+            if num == fail or num < 0 or math.floor(num) ~= num then
+                server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[i + 1]), user_peer_id)
+                return
+            end
+        else
+            server.announce(getAnnounceName(), string.format('error: invalid argument: "%s"', args[i]), user_peer_id)
             return
         end
     end
