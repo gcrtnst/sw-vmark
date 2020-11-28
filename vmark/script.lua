@@ -54,16 +54,32 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local msg = {}
-    for i = math.max(1, #g_savedata['list'] - num + 1), #g_savedata['list'] do
-        table.insert(msg, string.format(
-            '%s %3d %s @%s "%s"',
-            g_savedata['list'][i]['mark'] and 'M' or '-',
-            g_savedata['list'][i]['vehicle_id'],
-            formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
-            g_savedata['list'][i]['peer_name'],
-            g_savedata['list'][i]['vehicle_name']
-        ))
+    for i = #g_savedata['list'], 1, -1 do
+        if g_savedata['list'][i]['mark'] then
+            table.insert(msg, string.format(
+                'M %3d %s @%s "%s"',
+                g_savedata['list'][i]['vehicle_id'],
+                formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
+                g_savedata['list'][i]['peer_name'],
+                g_savedata['list'][i]['vehicle_name']
+            ))
+        end
     end
+    for i = #g_savedata['list'], 1, -1 do
+        if #msg >= num then
+            break
+        end
+        if not g_savedata['list'][i]['mark'] then
+            table.insert(msg, string.format(
+                '- %3d %s @%s "%s"',
+                g_savedata['list'][i]['vehicle_id'],
+                formatTicks(g_savedata['time'] - g_savedata['list'][i]['spawn_time']),
+                g_savedata['list'][i]['peer_name'],
+                g_savedata['list'][i]['vehicle_name']
+            ))
+        end
+    end
+    msg = reverseTable(msg)
     msg = table.concat(msg, '\n')
     server.announce(getAnnounceName(), msg, user_peer_id)
 end
@@ -478,6 +494,14 @@ function copyTable(tbl)
     local new = {}
     for key, value in pairs(tbl) do
         new[key] = value
+    end
+    return new
+end
+
+function reverseTable(tbl)
+    local new = {}
+    for i, value in ipairs(tbl) do
+        new[#tbl - i + 1] = value
     end
     return new
 end
