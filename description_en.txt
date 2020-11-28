@@ -1,5 +1,4 @@
 A custom command to display the vehicle position in view or on a map.
-I am creating this for the main purpose of cheating in search missions.
 
 [b]### Install ###[/b]
 1. Subscribe this work.
@@ -13,8 +12,8 @@ You can run this by typing a command into the chat field.
 Lists vehicles that have recently spawned.
 If NUM is specified, it shows the specified number of vehicles.
 Output format: [b]'mark_exists VEHICLE_ID spawn_time @peer_name "vehicle_name"'[/b]
-Example output 1: [b]'- 3m 150 @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, gcrtnst spawned a vehicle named Kinoko
-Example Output 2: [b]'M 1d 112 @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, vehicle named vehicle_1 spawned by the script
+Example output 1: [b]'- 150 3m @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, gcrtnst spawned a vehicle named Kinoko
+Example Output 2: [b]'M 112 1d @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, vehicle named vehicle_1 spawned by the script
 
 - [b]?vmark set [VEHICLE_ID][/b]
 Mark the spawn position of the vehicle.
@@ -25,8 +24,12 @@ In multiplayer, the mark is displayed to all players.
 Erase the mark.
 Specify -1 for VEHICLE_ID to remove all marks.
 
-[b]### Caveats ###[/b]
-- This probably won't work in experimental branch.
+- [b]?vmark hide[/b]
+Temporarily hides all the marks.
+Effective only on the person who performed.
+
+- [b]?vmark show[/b]
+Show hidden marks again.
 
 [b]### Repository ###[/b]
 https://github.com/gcrtnst/sw-vmark
