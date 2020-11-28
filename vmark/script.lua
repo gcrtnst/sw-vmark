@@ -113,7 +113,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         for _, info in pairs(g_savedata['list']) do
             info['mark'] = false
         end
-        server.announce(getAnnounceName(), string.format('%s cleared all marks', getPlayerDisplayName(user_peer_id)))
+        server.announce(getAnnounceName(), string.format('%s cleared all markers', getPlayerDisplayName(user_peer_id)))
     else
         local info = getVehicleInfo(vehicle_id)
         if info == nil then
@@ -121,7 +121,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             return
         end
         info['mark'] = false
-        server.announce(getAnnounceName(), string.format('%s cleared mark on %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
+        server.announce(getAnnounceName(), string.format('%s cleared marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
     end
 end
 
@@ -131,7 +131,7 @@ function execHide(user_peer_id, is_admin, is_auth, args)
         return
     end
     g_hide[user_peer_id] = true
-    server.announce(getAnnounceName(), 'mark is now invisible', user_peer_id)
+    server.announce(getAnnounceName(), 'markers are now invisible', user_peer_id)
 end
 
 function execShow(user_peer_id, is_admin, is_auth, args)
@@ -140,7 +140,7 @@ function execShow(user_peer_id, is_admin, is_auth, args)
         return
     end
     g_hide[user_peer_id] = nil
-    server.announce(getAnnounceName(), 'mark is now visible', user_peer_id)
+    server.announce(getAnnounceName(), 'markers are now visible', user_peer_id)
 end
 
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)

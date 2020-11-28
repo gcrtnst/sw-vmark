@@ -2,8 +2,8 @@
 
 [b]### インストール ###[/b]
 1. この作品をサブスクライブしてください。
-2. "Vehicle Mark" を有効にしたワールドを新規作成してください。
-   New Game > Enable Addons > Workshop > Vehicle Mark
+2. "Vehicle Marker" を有効にしたワールドを新規作成してください。
+   New Game > Enable Addons > Workshop > Vehicle Marker
 
 [b]### 使い方 ###[/b]
 チャット欄にコマンドを入力することで操作します。
@@ -11,25 +11,25 @@
 - [b]?vmark list [NUM][/b]
 最近スポーンした車両を一覧表示します。
 NUM で項目数を指定できます。
-出力形式: [b]'マーク有無 VEHICLE_ID スポーン時間 @プレイヤー名 "車両名"'[/b]
-出力例1: [b]'- 150 3m @gcrtnst "Kinoko"'[/b]: マーク無し、VEHICLE_ID は150、スポーン時刻は3分前、gcrtnst がスポーンさせた、Kinoko という名前の車両
-出力例2: [b]'M 112 1d @[script] "vehicle_1"'[/b]: マーク有り、VEHICLE_ID は112、スポーン時刻は1日前、スクリプトによってスポーンされた、vehicle_1 という名前の車両
+出力形式: [b]'マーカー有無 VEHICLE_ID スポーン時間 @プレイヤー名 "車両名"'[/b]
+出力例1: [b]'- 150 3m @gcrtnst "Kinoko"'[/b]: マーカー無し、VEHICLE_ID は150、スポーン時刻は3分前、gcrtnst がスポーンさせた、Kinoko という名前の車両
+出力例2: [b]'M 112 1d @[script] "vehicle_1"'[/b]: マーカー有り、VEHICLE_ID は112、スポーン時刻は1日前、スクリプトによってスポーンされた、vehicle_1 という名前の車両
 
 - [b]?vmark set [VEHICLE_ID][/b]
 車両をマークします。
 VEHICLE_ID を指定しなかった場合、最も最近スポーンした車両をマークします。
-マルチプレイの場合、マークは全員に表示されます。
+マルチプレイの場合、マーカーは全員に表示されます。
 
 - [b]?vmark clear VEHICLE_ID[/b]
-マークを消します。
-VEHICLE_ID に -1 を指定すると、全てのマークを消します。
+マーカーを消します。
+VEHICLE_ID に -1 を指定すると、全てのマーカーを消します。
 
 - [b]?vmark hide[/b]
-一時的にすべてのマークを隠します。
+一時的にすべてのマーカーを隠します。
 実行した本人にのみ効果があります。
 
 - [b]?vmark show[/b]
-隠したマークを再び表示します。
+隠したマーカーを再び表示します。
 
 [b]### 利用可否 ###[/b]
 これらの作成物は Unlicense でライセンスされています。

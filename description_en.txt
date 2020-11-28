@@ -2,8 +2,8 @@ A custom command to display the vehicle position in view or on a map.
 
 [b]### Install ###[/b]
 1. Subscribe this work.
-2. Create a new world with "Vehicle Mark" enabled.
-   New Game > Enable Addons > Workshop > Vehicle Mark
+2. Create a new world with "Vehicle Marker" enabled.
+   New Game > Enable Addons > Workshop > Vehicle Marker
 
 [b]### Usage ###[/b]
 You can run this by typing a command into the chat field.
@@ -11,25 +11,25 @@ You can run this by typing a command into the chat field.
 - [b]?vmark list [NUM][/b]
 Lists vehicles that have recently spawned.
 If NUM is specified, it shows the specified number of vehicles.
-Output format: [b]'mark_exists VEHICLE_ID spawn_time @peer_name "vehicle_name"'[/b]
+Output format: [b]'marker_exists VEHICLE_ID spawn_time @peer_name "vehicle_name"'[/b]
 Example output 1: [b]'- 150 3m @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, gcrtnst spawned a vehicle named Kinoko
 Example Output 2: [b]'M 112 1d @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, vehicle named vehicle_1 spawned by the script
 
 - [b]?vmark set [VEHICLE_ID][/b]
 Mark the spawn position of the vehicle.
 If VEHICLE_ID is not specified, the most recently spawned vehicle is marked.
-In multiplayer, the mark is displayed to all players.
+In multiplayer, the marker is displayed to all players.
 
 - [b]?vmark clear VEHICLE_ID[/b]
-Erase the mark.
-Specify -1 for VEHICLE_ID to remove all marks.
+Erase the marker.
+Specify -1 for VEHICLE_ID to remove all markers.
 
 - [b]?vmark hide[/b]
-Temporarily hides all the marks.
+Temporarily hides all the markers.
 Effective only on the person who performed.
 
 - [b]?vmark show[/b]
-Show hidden marks again.
+Show hidden markers again.
 
 [b]### Repository ###[/b]
 https://github.com/gcrtnst/sw-vmark
