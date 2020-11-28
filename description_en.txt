@@ -11,9 +11,9 @@ You can run this by typing a command into the chat field.
 - [b]?vmark list [NUM][/b]
 Lists vehicles that have recently spawned.
 If NUM is specified, it shows the specified number of vehicles.
-Output format: [b]'marker_exists VEHICLE_ID spawn_time @peer_name "vehicle_name"'[/b]
-Example output 1: [b]'- 150 3m @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, gcrtnst spawned a vehicle named Kinoko
-Example Output 2: [b]'M 112 1d @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, vehicle named vehicle_1 spawned by the script
+Output format: [b]'marker_exists VEHICLE_ID spawn_time distance @peer_name "vehicle_name"'[/b]
+Example output 1: [b]'- 150 3m 0.1km @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, distance to the player is 0.1km, gcrtnst spawned a vehicle named Kinoko
+Example Output 2: [b]'M 112 1d 12.3km @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, distance to the player is 12.3km, vehicle named vehicle_1 spawned by the script
 
 - [b]?vmark set [VEHICLE_ID][/b]
 Mark the spawn position of the vehicle.

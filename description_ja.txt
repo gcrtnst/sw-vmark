@@ -11,9 +11,9 @@
 - [b]?vmark list [NUM][/b]
 最近スポーンした車両を一覧表示します。
 NUM で項目数を指定できます。
-出力形式: [b]'マーカー有無 VEHICLE_ID スポーン時間 @プレイヤー名 "車両名"'[/b]
-出力例1: [b]'- 150 3m @gcrtnst "Kinoko"'[/b]: マーカー無し、VEHICLE_ID は150、スポーン時刻は3分前、gcrtnst がスポーンさせた、Kinoko という名前の車両
-出力例2: [b]'M 112 1d @[script] "vehicle_1"'[/b]: マーカー有り、VEHICLE_ID は112、スポーン時刻は1日前、スクリプトによってスポーンされた、vehicle_1 という名前の車両
+出力形式: [b]'マーカー有無 VEHICLE_ID スポーン時間 距離 @プレイヤー名 "車両名"'[/b]
+出力例1: [b]'- 150 3m 0.1km @gcrtnst "Kinoko"'[/b]: マーカー無し、VEHICLE_ID は150、スポーン時刻は3分前、プレイヤーとの距離は0.1km、gcrtnst がスポーンさせた、Kinoko という名前の車両
+出力例2: [b]'M 112 1d 12.3km @[script] "vehicle_1"'[/b]: マーカー有り、VEHICLE_ID は112、スポーン時刻は1日前、プレイヤーとの距離は12.3km、スクリプトによってスポーンされた、vehicle_1 という名前の車両
 
 - [b]?vmark set [VEHICLE_ID][/b]
 車両をマークします。
