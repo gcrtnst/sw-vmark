@@ -153,13 +153,18 @@ function execList(user_peer_id, is_admin, is_auth, args)
             dist = '???km'
         end
 
+        local peer_display_name = info['peer_display_name']
+        if info['peer_id'] >= 0 then
+            peer_display_name = string.format('%s#%d', info['peer_display_name'], info['peer_id'])
+        end
+
         return string.format(
-            '%s %3d %s %s @%s "%s"',
+            '%s %3d %s %s %s "%s"',
             info['mark'] and 'M' or '-',
             info['vehicle_id'],
             formatTicks(g_savedata['time'] - info['spawn_time']),
             dist,
-            info['peer_display_name'],
+            peer_display_name,
             info['vehicle_display_name']
         )
     end
@@ -272,10 +277,10 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
-    info['vehicle_display_name'] = is_success and vehicle_name or '[unnamed vehicle]'
+    info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
     local peer_name, is_success = server.getPlayerName(peer_id)
     info['peer_name'] = is_success and peer_name or nil
-    info['peer_display_name'] = is_success and peer_name or '[script]'
+    info['peer_display_name'] = is_success and peer_name or '{script}'
     table.insert(g_savedata['list'], info)
 end
 
@@ -324,9 +329,9 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 14 then
+    if g_savedata['version'] ~= 15 then
         g_savedata = {
-            ['version'] = 14,
+            ['version'] = 15,
             ['time'] = 0,
             ['list'] = {},
         }
@@ -553,7 +558,7 @@ end
 function getPlayerDisplayName(peer_id)
     local peer_name, is_success = server.getPlayerName(peer_id)
     if not is_success then
-        return '[someone]'
+        return '{someone}'
     end
     return peer_name
 end
