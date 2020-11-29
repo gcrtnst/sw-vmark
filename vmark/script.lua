@@ -42,7 +42,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local num = 5
     local peer_id = nil
     local vehicle_name = ''
-    local sort = 'vehicle_id'
+    local sort = 'id'
     for i = 2, #args, 2 do
         if args[i] == '-num' then
             if i + 1 > #args then
@@ -76,7 +76,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 return
             end
             sort = args[i + 1]
-            if sort ~= 'vehicle_id' and sort ~= '!vehicle_id' and
+            if sort ~= 'id' and sort ~= '!id' and
                 sort ~= 'dist' and sort ~= '!dist' and
                 sort ~= 'peer' and sort ~= '!peer' and
                 sort ~= 'name' and sort ~= '!name' then
@@ -113,10 +113,10 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local function compareVehicleInfo(info_1, info_2)
         local value_1 = nil
         local value_2 = nil
-        if sort == 'vehicle_id' then
+        if sort == 'id' then
             value_1 = info_1['vehicle_id']
             value_2 = info_2['vehicle_id']
-        elseif sort == '!vehicle_id' then
+        elseif sort == '!id' then
             value_1 = info_2['vehicle_id']
             value_2 = info_1['vehicle_id']
         elseif sort == 'dist' then
