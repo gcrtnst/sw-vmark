@@ -130,7 +130,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         elseif sort == 'vehicle_name' then
             value_1 = info_1['vehicle_name']
             value_2 = info_2['vehicle_name']
-        elseif sort == 'vehicle_name' then
+        elseif sort == '!vehicle_name' then
             value_1 = info_2['vehicle_name']
             value_2 = info_1['vehicle_name']
         end
