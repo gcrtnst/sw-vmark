@@ -97,8 +97,8 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local function filterVehicleList(list)
         local new = {}
         for _, info in pairs(list) do
-            local peer_name_matched = string.find(info['peer_name'], peer_name, 1, true) ~= fail
-            local vehicle_name_matched = string.find(info['vehicle_name'], vehicle_name, 1, true) ~= fail
+            local peer_name_matched = string.find(info['peer_display_name'], peer_name, 1, true) ~= fail
+            local vehicle_name_matched = string.find(info['vehicle_display_name'], vehicle_name, 1, true) ~= fail
             if peer_name_matched and vehicle_name_matched then
                 table.insert(new, info)
             end
@@ -122,17 +122,17 @@ function execList(user_peer_id, is_admin, is_auth, args)
             value_1 = getVehicleDist(info_1)
             value_2 = getVehicleDist(info_2)
         elseif sort == 'peer_name' then
-            value_1 = info_1['peer_name']
-            value_2 = info_2['peer_name']
+            value_1 = info_1['peer_display_name']
+            value_2 = info_2['peer_display_name']
         elseif sort == '!peer_name' then
-            value_1 = info_2['peer_name']
-            value_2 = info_1['peer_name']
+            value_1 = info_2['peer_display_name']
+            value_2 = info_1['peer_display_name']
         elseif sort == 'vehicle_name' then
-            value_1 = info_1['vehicle_name']
-            value_2 = info_2['vehicle_name']
+            value_1 = info_1['vehicle_display_name']
+            value_2 = info_2['vehicle_display_name']
         elseif sort == '!vehicle_name' then
-            value_1 = info_2['vehicle_name']
-            value_2 = info_1['vehicle_name']
+            value_1 = info_2['vehicle_display_name']
+            value_2 = info_1['vehicle_display_name']
         end
 
         if value_1 == nil or value_2 == nil or value_1 == value_2 then
@@ -155,8 +155,8 @@ function execList(user_peer_id, is_admin, is_auth, args)
             info['vehicle_id'],
             formatTicks(g_savedata['time'] - info['spawn_time']),
             dist,
-            info['peer_name'],
-            info['vehicle_name']
+            info['peer_display_name'],
+            info['vehicle_display_name']
         )
     end
 
@@ -209,7 +209,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
         info = g_savedata['list'][#g_savedata['list']]
     end
     info['mark'] = true
-    server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
+    server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']))
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
@@ -236,7 +236,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             return
         end
         info['mark'] = false
-        server.announce(getAnnounceName(), string.format('%s cleared marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_name']))
+        server.announce(getAnnounceName(), string.format('%s cleared marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']))
     end
 end
 
@@ -266,9 +266,9 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
         ['mark'] = false
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
-    info['vehicle_name'] = is_success and vehicle_name or '[unnamed vehicle]'
+    info['vehicle_display_name'] = is_success and vehicle_name or '[unnamed vehicle]'
     local peer_name, is_success = server.getPlayerName(peer_id)
-    info['peer_name'] = is_success and peer_name or '[script]'
+    info['peer_display_name'] = is_success and peer_name or '[script]'
     table.insert(g_savedata['list'], info)
 end
 
@@ -291,9 +291,9 @@ function onTick(game_ticks)
         if info['mark'] then
             local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-            g_ui_cache.setMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_name'], 0, '')
+            g_ui_cache.setMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
             for _, player in pairs(server.getPlayers()) do
-                local text = info['vehicle_name']
+                local text = info['vehicle_display_name']
                 local peer_matrix, is_success = server.getPlayerPos(player['id'])
                 if is_success then
                     text = text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
@@ -317,9 +317,9 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 12 then
+    if g_savedata['version'] ~= 13 then
         g_savedata = {
-            ['version'] = 12,
+            ['version'] = 13,
             ['time'] = 0,
             ['list'] = {},
         }
