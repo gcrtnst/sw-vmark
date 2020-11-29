@@ -262,12 +262,15 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
+        ['peer_id'] = peer_id,
         ['ui_id'] = server.getMapID(),
         ['mark'] = false
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
+    info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '[unnamed vehicle]'
     local peer_name, is_success = server.getPlayerName(peer_id)
+    info['peer_name'] = is_success and peer_name or nil
     info['peer_display_name'] = is_success and peer_name or '[script]'
     table.insert(g_savedata['list'], info)
 end
@@ -317,9 +320,9 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 13 then
+    if g_savedata['version'] ~= 14 then
         g_savedata = {
-            ['version'] = 13,
+            ['version'] = 14,
             ['time'] = 0,
             ['list'] = {},
         }
