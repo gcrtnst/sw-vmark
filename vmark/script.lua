@@ -40,7 +40,7 @@ end
 
 function execList(user_peer_id, is_admin, is_auth, args)
     local num = 5
-    local peer_name = ''
+    local peer_id = nil
     local vehicle_name = ''
     local sort = 'vehicle_id'
     for i = 2, #args, 2 do
@@ -54,12 +54,16 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[i + 1]), user_peer_id)
                 return
             end
-        elseif args[i] == '-peer_name' then
+        elseif args[i] == '-peer' then
             if i + 1 > #args then
-                server.announce(getAnnounceName(), 'error: missing argument to "-peer_name"', user_peer_id)
+                server.announce(getAnnounceName(), 'error: missing argument to "-peer"', user_peer_id)
                 return
             end
-            peer_name = args[i + 1]
+            peer_id = tonumber(args[i + 1])
+            if peer_id == fail or math.floor(peer_id) ~= peer_id then
+                server.announce(getAnnounceName(), string.format('error: not a integer: "%s"', args[i + 1]), user_peer_id)
+                return
+            end
         elseif args[i] == '-vehicle_name' then
             if i + 1 > #args then
                 server.announce(getAnnounceName(), 'error: missing argument to "-vehicle_name"', user_peer_id)
@@ -97,9 +101,9 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local function filterVehicleList(list)
         local new = {}
         for _, info in pairs(list) do
-            local peer_name_matched = string.find(info['peer_display_name'], peer_name, 1, true) ~= fail
+            local peer_id_matched = peer_id == nil or info['peer_id'] == peer_id
             local vehicle_name_matched = string.find(info['vehicle_display_name'], vehicle_name, 1, true) ~= fail
-            if peer_name_matched and vehicle_name_matched then
+            if peer_id_matched and vehicle_name_matched then
                 table.insert(new, info)
             end
         end
