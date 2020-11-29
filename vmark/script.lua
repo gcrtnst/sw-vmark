@@ -40,6 +40,7 @@ end
 
 function execList(user_peer_id, is_admin, is_auth, args)
     local num = 5
+    local vehicle_name = ''
     local sort = 'vehicle_id'
     for i = 2, #args, 2 do
         if args[i] == '-num' then
@@ -52,6 +53,12 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[i + 1]), user_peer_id)
                 return
             end
+        elseif args[i] == '-vehicle_name' then
+            if i + 1 > #args then
+                server.announce(getAnnounceName(), 'error: missing argument to "-vehicle_name"', user_peer_id)
+                return
+            end
+            vehicle_name = args[i + 1]
         elseif args[i] == '-sort' then
             if i + 1 > #args then
                 server.announce(getAnnounceName(), 'error: missing argument to "-sort"', user_peer_id)
@@ -78,6 +85,16 @@ function execList(user_peer_id, is_admin, is_auth, args)
             return nil
         end
         return matrix.distance(player_matrix, vehicle_matrix)
+    end
+
+    local function filterVehicleList(list)
+        local new = {}
+        for _, info in pairs(list) do
+            if string.find(info['vehicle_name'], vehicle_name, 1, true) ~= fail then
+                table.insert(new, info)
+            end
+        end
+        return new
     end
 
     local function compareVehicleInfo(info_1, info_2)
@@ -135,6 +152,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local list = copyTable(g_savedata['list'])
+    list = filterVehicleList(list)
     table.sort(list, compareVehicleInfo)
 
     local msg = {}
