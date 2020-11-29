@@ -57,7 +57,7 @@ You can prefix the arguments with [b]![/b] at the beginning of an argument to so
 [b]-help[/b]
 Show usage.
 
-[h1]?vmark list Output format[/h1]
+[h1]?vmark list OUTPUT FORMAT[/h1]
 The output format is as follows
 [b]MARKER_EXISTS VEHICLE_ID SPAWN_TIME DIST PEER_NAME#PEER_ID "VEHICLE_NAME"[/b]
 
