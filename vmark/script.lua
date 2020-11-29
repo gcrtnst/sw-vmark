@@ -40,6 +40,7 @@ end
 
 function execList(user_peer_id, is_admin, is_auth, args)
     local num = 5
+    local sort = 'vehicle_id'
     for i = 2, #args, 2 do
         if args[i] == '-num' then
             if i + 1 > #args then
@@ -49,6 +50,19 @@ function execList(user_peer_id, is_admin, is_auth, args)
             num = tonumber(args[i + 1])
             if num == fail or num < 0 or math.floor(num) ~= num then
                 server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[i + 1]), user_peer_id)
+                return
+            end
+        elseif args[i] == '-sort' then
+            if i + 1 > #args then
+                server.announce(getAnnounceName(), 'error: missing argument to "-sort"', user_peer_id)
+                return
+            end
+            sort = args[i + 1]
+            if sort ~= 'vehicle_id' and sort ~= '!vehicle_id' and
+                sort ~= 'dist' and sort ~= '!dist' and
+                sort ~= 'peer_name' and sort ~= '!peer_name' and
+                sort ~= 'vehicle_name' and sort ~= '!vehicle_name' then
+                server.announce(getAnnounceName(), string.format('error: invalid sort key: "%s"', sort), user_peer_id)
                 return
             end
         else
@@ -64,6 +78,41 @@ function execList(user_peer_id, is_admin, is_auth, args)
             return nil
         end
         return matrix.distance(player_matrix, vehicle_matrix)
+    end
+
+    local function compareVehicleInfo(info_1, info_2)
+        local value_1 = nil
+        local value_2 = nil
+        if sort == 'vehicle_id' then
+            value_1 = info_1['vehicle_id']
+            value_2 = info_2['vehicle_id']
+        elseif sort == '!vehicle_id' then
+            value_1 = info_2['vehicle_id']
+            value_2 = info_1['vehicle_id']
+        elseif sort == 'dist' then
+            value_1 = getVehicleDist(info_2)
+            value_2 = getVehicleDist(info_1)
+        elseif sort == '!dist' then
+            value_1 = getVehicleDist(info_1)
+            value_2 = getVehicleDist(info_2)
+        elseif sort == 'peer_name' then
+            value_1 = info_1['peer_name']
+            value_2 = info_2['peer_name']
+        elseif sort == '!peer_name' then
+            value_1 = info_2['peer_name']
+            value_2 = info_1['peer_name']
+        elseif sort == 'vehicle_name' then
+            value_1 = info_1['vehicle_name']
+            value_2 = info_2['vehicle_name']
+        elseif sort == 'vehicle_name' then
+            value_1 = info_2['vehicle_name']
+            value_2 = info_1['vehicle_name']
+        end
+
+        if value_1 == nil or value_2 == nil or value_1 == value_2 then
+            return info_1['vehicle_id'] < info_2['vehicle_id']
+        end
+        return value_1 < value_2
     end
 
     local function formatMessage(info)
@@ -85,18 +134,21 @@ function execList(user_peer_id, is_admin, is_auth, args)
         )
     end
 
+    local list = copyTable(g_savedata['list'])
+    table.sort(list, compareVehicleInfo)
+
     local msg = {}
-    for i = #g_savedata['list'], 1, -1 do
-        if g_savedata['list'][i]['mark'] then
-            table.insert(msg, formatMessage(g_savedata['list'][i]))
+    for i = #list, 1, -1 do
+        if list[i]['mark'] then
+            table.insert(msg, formatMessage(list[i]))
         end
     end
-    for i = #g_savedata['list'], 1, -1 do
+    for i = #list, 1, -1 do
         if #msg >= num then
             break
         end
-        if not g_savedata['list'][i]['mark'] then
-            table.insert(msg, formatMessage(g_savedata['list'][i]))
+        if not list[i]['mark'] then
+            table.insert(msg, formatMessage(list[i]))
         end
     end
     msg = reverseTable(msg)
