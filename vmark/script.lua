@@ -126,21 +126,25 @@ function execList(user_peer_id, is_admin, is_auth, args)
             value_1 = getVehicleDist(info_1)
             value_2 = getVehicleDist(info_2)
         elseif sort == 'peer' then
-            value_1 = info_1['peer_display_name']
-            value_2 = info_2['peer_display_name']
+            value_1 = info_1['peer_id']
+            value_2 = info_2['peer_id']
         elseif sort == '!peer' then
-            value_1 = info_2['peer_display_name']
-            value_2 = info_1['peer_display_name']
+            value_1 = info_2['peer_id']
+            value_2 = info_1['peer_id']
         elseif sort == 'name' then
-            value_1 = info_1['vehicle_display_name']
-            value_2 = info_2['vehicle_display_name']
+            value_1 = info_1['vehicle_name']
+            value_2 = info_2['vehicle_name']
         elseif sort == '!name' then
-            value_1 = info_2['vehicle_display_name']
-            value_2 = info_1['vehicle_display_name']
+            value_1 = info_2['vehicle_name']
+            value_2 = info_1['vehicle_name']
         end
 
-        if value_1 == nil or value_2 == nil or value_1 == value_2 then
+        if value_1 == value_2 then
             return info_1['vehicle_id'] < info_2['vehicle_id']
+        elseif value_1 == nil then
+            return false
+        elseif value_2 == nil then
+            return true
         end
         return value_1 < value_2
     end
