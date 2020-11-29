@@ -66,7 +66,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
             end
         elseif args[i] == '-name' then
             if i + 1 > #args then
-                server.announce(getAnnounceName(), 'error: missing argument to "-vehicle_name"', user_peer_id)
+                server.announce(getAnnounceName(), 'error: missing argument to "-name"', user_peer_id)
                 return
             end
             vehicle_name = args[i + 1]
