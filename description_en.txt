@@ -1,37 +1,96 @@
-A custom command to display the vehicle position in view or on a map.
+A custom command to display the location of a vehicle in view or on a map.
 
-[b]### Install ###[/b]
-1. Subscribe this work.
-2. Create a new world with "Vehicle Marker" enabled.
+[h1]Install[/h1]
+1. Subscribe to this work.
+2. Create a new world with the "Vehicle Marker" enabled.
    New Game > Enable Addons > Workshop > Vehicle Marker
 
-[b]### Usage ###[/b]
-You can run this by typing a command into the chat field.
+[h1]Usage[/h1]
+Operate by typing commands in the chat field.
 
-- [b]?vmark list [NUM][/b]
-Lists vehicles that have recently spawned.
-If NUM is specified, it shows the specified number of vehicles.
-Output format: [b]'marker_exists VEHICLE_ID spawn_time distance @peer_name "vehicle_name"'[/b]
-Example output 1: [b]'- 150 3m 0.1km @gcrtnst "Kinoko"'[/b]: unmarked, VEHICLE_ID is 150, spawn time is 3 minutes ago, distance to the player is 0.1km, gcrtnst spawned a vehicle named Kinoko
-Example Output 2: [b]'M 112 1d 12.3km @[script] "vehicle_1"'[/b]: marked, VEHICLE_ID is 112, spawn time is one day ago, distance to the player is 12.3km, vehicle named vehicle_1 spawned by the script
+[b]?vmark list [OPTIONS][/b]
+Lists recently spawned vehicles.
+For options, see [b]?vmark list OPTIONS[/b] below.
+For the output format, see [b]?vmark list OUTPUT FORMAT[/b] below.
 
-- [b]?vmark set [VEHICLE_ID][/b]
-Mark the spawn position of the vehicle.
-If VEHICLE_ID is not specified, the most recently spawned vehicle is marked.
-In multiplayer, the marker is displayed to all players.
+[b]?vmark set [VEHICLE_ID][/b]
+Mark the vehicle.
+If [b]VEHICLE_ID[/b] is not specified, it marks the most recently spawned vehicle.
+In multiplayer, the marker will be shown to everyone.
 
-- [b]?vmark clear VEHICLE_ID[/b]
-Erase the marker.
-Specify -1 for VEHICLE_ID to remove all markers.
+[b]?vmark clear VEHICLE_ID[/b]
+Erase the markers.
+If [b]VEHICLE_ID[/b] is set to -1, all markers will be erased.
 
-- [b]?vmark hide[/b]
-Temporarily hides all the markers.
-Effective only on the person who performed.
+[b]?vmark hide[/b]
+Temporarily hides all markers.
+It has an effect only on the person who executes it.
 
-- [b]?vmark show[/b]
+[b]?vmark show[/b]
 Show hidden markers again.
 
-[b]### Repository ###[/b]
+[b]?vmark help [noparse][list][/noparse][/b]
+Display the usage of the command.
+Specify [b]list[/b] as an argument to show how to use [b]?vmark list[/b].
+
+[h1]?vmark list OPTIONS[/h1]
+[b]-num NUM[/b]
+Specify the number of output items.
+
+[b]-peer PEER_ID[/b]
+Filter the output with [b]PEER_ID[/b].
+
+[b]-name VEHICLE_NAME[/b]
+Filter the output by vehicle name.
+
+[b]-sort ([!]id | [!]dist | [!]peer | [!]name)[/b]
+Sort the output. In the arguments, you can specify the information to be used for sorting.
+You can prefix the arguments with [b]![/b] at the beginning of an argument to sort the output in reverse order.
+[table]
+[tr][th]Argument[/th][th]Information for sorting[/th][/tr]
+[tr][th]id[/th][th][b]VEHICLE_ID[/b][/th][/tr]
+[tr][th]dist[/th][th]Distance to the player[/th][/tr]
+[tr][th]peer[/th][th][b]PEER_ID[/b][/th][/tr]
+[tr][th]name[/th][th]vehicle name[/th][/tr]
+[/table]
+
+[b]-help[/b]
+Show usage.
+
+[h1]?vmark list Output format[/h1]
+The output format is as follows
+[b]MARKER_EXISTS VEHICLE_ID SPAWN_TIME DIST PEER_NAME#PEER_ID "VEHICLE_NAME"[/b]
+
+[b]MARKER_EXISTS[/b]
+Display [b]M[/b] if the vehicle is marked, and [b]-[/b] if it is not.
+
+[b]VEHICLE_ID[/b]
+Display the ID of a vehicle. Arguments for [b]?vmark set[/b] and [b]?vmark clear[/b].
+
+[b]SPAWN_TIME[/b]
+Displays the in-game time that has elapsed since the vehicle spawned.
+
+[b]DIST[/b]
+Displays the distance to the player.
+
+[b]PEER_NAME[/b]
+Displays the ID of the player who spawned that vehicle.
+For vehicles spawned by a script, it will be displayed as [b]{script}[/b].
+
+[b]PEER_ID[/b]
+Displays the player's ID.
+If the vehicle was spawned by the script, it will not be displayed.
+
+[b]VEHICLE_NAME[/b]
+Display the file name of a vehicle.
+
+[h1]License[/h1]
+These creations are licensed under the Unlicense.
+The full text of the license can be found here.
+https://github.com/gcrtnst/sw-vmark/blob/main/LICENSE
+
+[h1]Repository[/h1]
 https://github.com/gcrtnst/sw-vmark
 
-(Translated using DeepL Translator)
+
+Translated with www.DeepL.com/Translator (free version)

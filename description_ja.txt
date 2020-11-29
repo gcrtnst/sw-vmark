@@ -1,40 +1,93 @@
 車両の位置を視界やマップ上に表示するカスタムコマンドです。
 
-[b]### インストール ###[/b]
+[h1]インストール[/h1]
 1. この作品をサブスクライブしてください。
 2. "Vehicle Marker" を有効にしたワールドを新規作成してください。
    New Game > Enable Addons > Workshop > Vehicle Marker
 
-[b]### 使い方 ###[/b]
+[h1]使い方[/h1]
 チャット欄にコマンドを入力することで操作します。
 
-- [b]?vmark list [NUM][/b]
+[b]?vmark list [OPTIONS][/b]
 最近スポーンした車両を一覧表示します。
-NUM で項目数を指定できます。
-出力形式: [b]'マーカー有無 VEHICLE_ID スポーン時間 距離 @プレイヤー名 "車両名"'[/b]
-出力例1: [b]'- 150 3m 0.1km @gcrtnst "Kinoko"'[/b]: マーカー無し、VEHICLE_ID は150、スポーン時刻は3分前、プレイヤーとの距離は0.1km、gcrtnst がスポーンさせた、Kinoko という名前の車両
-出力例2: [b]'M 112 1d 12.3km @[script] "vehicle_1"'[/b]: マーカー有り、VEHICLE_ID は112、スポーン時刻は1日前、プレイヤーとの距離は12.3km、スクリプトによってスポーンされた、vehicle_1 という名前の車両
+オプションについては、以下の [b]?vmark list OPTIONS[/b] を参照ください。
+出力フォーマットについては、以下の [b]?vmark list 出力フォーマット[/b] を参照ください。
 
-- [b]?vmark set [VEHICLE_ID][/b]
+[b]?vmark set [VEHICLE_ID][/b]
 車両をマークします。
-VEHICLE_ID を指定しなかった場合、最も最近スポーンした車両をマークします。
+[b]VEHICLE_ID[/b] を指定しなかった場合、最も最近スポーンした車両をマークします。
 マルチプレイの場合、マーカーは全員に表示されます。
 
-- [b]?vmark clear VEHICLE_ID[/b]
+[b]?vmark clear VEHICLE_ID[/b]
 マーカーを消します。
-VEHICLE_ID に -1 を指定すると、全てのマーカーを消します。
+[b]VEHICLE_ID[/b] に -1 を指定すると、全てのマーカーを消します。
 
-- [b]?vmark hide[/b]
+[b]?vmark hide[/b]
 一時的にすべてのマーカーを隠します。
 実行した本人にのみ効果があります。
 
-- [b]?vmark show[/b]
+[b]?vmark show[/b]
 隠したマーカーを再び表示します。
 
-[b]### 利用可否 ###[/b]
+[b]?vmark help [noparse][list][/noparse][/b]
+コマンドの使い方を表示します。
+引数に [b]list[/b] を指定すると、[b]?vmark list[/b] の使い方を表示します。
+
+[h1]?vmark list OPTIONS[/h1]
+[b]-num NUM[/b]
+出力項目数を指定します。
+
+[b]-peer PEER_ID[/b]
+出力を [b]PEER_ID[/b] で絞り込みます。
+
+[b]-name VEHICLE_NAME[/b]
+出力を車両名で絞り込みます。
+
+[b]-sort ([!]id | [!]dist | [!]peer | [!]name)[/b]
+出力をソートします。引数で、ソートに使う情報を指定できます。
+引数の先頭に [b]![/b] を付けると、逆順になります。
+[table]
+[tr][th]引数[/th][th]ソートに使う情報[/th][/tr]
+[tr][th]id[/th][th][b]VEHICLE_ID[/b][/th][/tr]
+[tr][th]dist[/th][th]プレイヤーとの距離[/th][/tr]
+[tr][th]peer[/th][th][b]PEER_ID[/b][/th][/tr]
+[tr][th]name[/th][th]車両名[/th][/tr]
+[/table]
+
+[b]-help[/b]
+使い方を表示します。
+
+[h1]?vmark list 出力フォーマット[/h1]
+出力形式は以下のようになります。
+[b]MARKER_EXISTS VEHICLE_ID SPAWN_TIME DIST PEER_NAME#PEER_ID "VEHICLE_NAME"[/b]
+
+[b]MARKER_EXISTS[/b]
+その車両がマークされている場合は [b]M[/b]、されていない場合は [b]-[/b] を表示します。
+
+[b]VEHICLE_ID[/b]
+車両の ID を表示します。[b]?vmark set[/b] や [b]?vmark clear[/b] の引数です。
+
+[b]SPAWN_TIME[/b]
+スポーンしてから経過したゲーム内時間を表示します。
+
+[b]DIST[/b]
+プレイヤーとの距離を表示します。
+
+[b]PEER_NAME[/b]
+プレイヤー名を表示します。
+スクリプトによってスポーンされた車両の場合、[b]{script}[/b]と表示されます。
+
+[b]PEER_ID[/b]
+その車両をスポーンさせたプレイヤーのIDを表示します。
+スクリプトによってスポーンされた車両の場合、表示されません。
+
+[b]VEHICLE_NAME[/b]
+車両のファイル名を表示します。
+
+[h1]ライセンス[/h1]
 これらの作成物は Unlicense でライセンスされています。
 ライセンスの全文はここで確認できます。
 https://github.com/gcrtnst/sw-vmark/blob/main/LICENSE
 
-[b]### リポジトリ ###[/b]
+[h1]リポジトリ[/h1]
 https://github.com/gcrtnst/sw-vmark
