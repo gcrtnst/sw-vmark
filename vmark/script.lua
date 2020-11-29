@@ -64,7 +64,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 server.announce(getAnnounceName(), string.format('error: not a integer: "%s"', args[i + 1]), user_peer_id)
                 return
             end
-        elseif args[i] == '-vehicle_name' then
+        elseif args[i] == '-name' then
             if i + 1 > #args then
                 server.announce(getAnnounceName(), 'error: missing argument to "-vehicle_name"', user_peer_id)
                 return
