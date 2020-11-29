@@ -28,6 +28,18 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
 end
 
 function execHelp(user_peer_id, is_admin, is_auth, args)
+    if #args == 2 and args[2] == 'list' then
+        server.announce(getAnnounceName(),
+            g_cmd .. ' list [OPTIONS]\n' ..
+            '\n' ..
+            'OPTIONS:\n' ..
+            '-peer PEER_ID\n' ..
+            '-name VEHICLE_NAME\n' ..
+            '-sort ([!]id | [!]dist | [!]peer | [!]name)',
+            user_peer_id
+        )
+        return
+    end
     server.announce(getAnnounceName(),
         g_cmd .. ' list [OPTIONS]\n' ..
         g_cmd .. ' set [VEHICLE_ID]\n' ..
@@ -83,6 +95,8 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 server.announce(getAnnounceName(), string.format('error: invalid sort key: "%s"', sort), user_peer_id)
                 return
             end
+        elseif args[i] == '-help' then
+            return execHelp(user_peer_id, is_admin, is_auth, {'help', 'list'})
         else
             server.announce(getAnnounceName(), string.format('error: invalid argument: "%s"', args[i]), user_peer_id)
             return
