@@ -78,8 +78,8 @@ function execList(user_peer_id, is_admin, is_auth, args)
             sort = args[i + 1]
             if sort ~= 'vehicle_id' and sort ~= '!vehicle_id' and
                 sort ~= 'dist' and sort ~= '!dist' and
-                sort ~= 'peer_name' and sort ~= '!peer_name' and
-                sort ~= 'vehicle_name' and sort ~= '!vehicle_name' then
+                sort ~= 'peer' and sort ~= '!peer' and
+                sort ~= 'name' and sort ~= '!name' then
                 server.announce(getAnnounceName(), string.format('error: invalid sort key: "%s"', sort), user_peer_id)
                 return
             end
@@ -125,16 +125,16 @@ function execList(user_peer_id, is_admin, is_auth, args)
         elseif sort == '!dist' then
             value_1 = getVehicleDist(info_1)
             value_2 = getVehicleDist(info_2)
-        elseif sort == 'peer_name' then
+        elseif sort == 'peer' then
             value_1 = info_1['peer_display_name']
             value_2 = info_2['peer_display_name']
-        elseif sort == '!peer_name' then
+        elseif sort == '!peer' then
             value_1 = info_2['peer_display_name']
             value_2 = info_1['peer_display_name']
-        elseif sort == 'vehicle_name' then
+        elseif sort == 'name' then
             value_1 = info_1['vehicle_display_name']
             value_2 = info_2['vehicle_display_name']
-        elseif sort == '!vehicle_name' then
+        elseif sort == '!name' then
             value_1 = info_2['vehicle_display_name']
             value_2 = info_1['vehicle_display_name']
         end
