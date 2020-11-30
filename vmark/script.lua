@@ -1,4 +1,5 @@
 g_cmd = '?vmark'
+g_mark = {}
 g_hide = {}
 g_ui_cache = nil
 
@@ -17,6 +18,10 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             execSet(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clear' then
             execClear(user_peer_id, is_admin, is_auth, args)
+        elseif args[1] == 'setlocal' then
+            execSetLocal(user_peer_id, is_admin, is_auth, args)
+        elseif args[1] == 'clearlocal' then
+            execClearLocal(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'hide' then
             execHide(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'show' then
@@ -44,6 +49,8 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
         g_cmd .. ' list [OPTIONS]\n' ..
         g_cmd .. ' set [VEHICLE_ID]\n' ..
         g_cmd .. ' clear VEHICLE_ID\n' ..
+        g_cmd .. ' setlocal [VEHICLE_ID]\n' ..
+        g_cmd .. ' clearlocal VEHICLE_ID\n' ..
         g_cmd .. ' hide\n' ..
         g_cmd .. ' show',
         user_peer_id
@@ -164,6 +171,13 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local function formatMessage(info)
+        local mark = '-'
+        if g_mark[user_peer_id] ~= nil and g_mark[user_peer_id][info['vehicle_id']] then
+            mark = 'L'
+        elseif info['mark'] then
+            mark = 'G'
+        end
+
         local dist = getVehicleDist(info)
         if dist ~= nil then
             dist = string.format('%.1fkm', dist/1000)
@@ -178,7 +192,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
         return string.format(
             '%s %3d %s %s %s "%s"',
-            info['mark'] and 'M' or '-',
+            mark,
             info['vehicle_id'],
             formatTicks(g_savedata['time'] - info['spawn_time']),
             dist,
@@ -236,7 +250,9 @@ function execSet(user_peer_id, is_admin, is_auth, args)
         info = g_savedata['list'][#g_savedata['list']]
     end
     info['mark'] = true
-    server.announce(getAnnounceName(), string.format('%s marked %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']))
+
+    local msg = string.format('%s set global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
+    server.announce(getAnnounceName(), msg)
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
@@ -255,7 +271,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         for _, info in pairs(g_savedata['list']) do
             info['mark'] = false
         end
-        server.announce(getAnnounceName(), string.format('%s cleared all markers', getPlayerDisplayName(user_peer_id)))
+        server.announce(getAnnounceName(), string.format('%s cleared all global markers', getPlayerDisplayName(user_peer_id)))
     else
         local info = getVehicleInfo(vehicle_id)
         if info == nil then
@@ -263,7 +279,68 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             return
         end
         info['mark'] = false
-        server.announce(getAnnounceName(), string.format('%s cleared marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']))
+        server.announce(getAnnounceName(), string.format('%s cleared global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']))
+    end
+end
+
+function execSetLocal(user_peer_id, is_admin, is_auth, args)
+    if #args > 2 then
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        return
+    end
+
+    local info = nil
+    if #args == 2 then
+        local vehicle_id = tonumber(args[2])
+        if vehicle_id == fail or vehicle_id < 0 or math.floor(vehicle_id) ~= vehicle_id then
+            server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+            return
+        end
+        info = getVehicleInfo(vehicle_id)
+        if info == nil then
+            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            return
+        end
+    else
+        if #g_savedata['list'] <= 0 then
+            server.announce(getAnnounceName(), 'error: no vehicle spawned yet', user_peer_id)
+            return
+        end
+        info = g_savedata['list'][#g_savedata['list']]
+    end
+
+    if g_mark[user_peer_id] == nil then
+        g_mark[user_peer_id] = {}
+    end
+    g_mark[user_peer_id][info['vehicle_id']] = true
+
+    local msg = string.format('%s set local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
+    server.announce(getAnnounceName(), msg, user_peer_id)
+end
+
+function execClearLocal(user_peer_id, is_admin, is_auth, args)
+    if #args ~= 2 then
+        server.announce(getAnnounceName(), 'error: missing or extra arguments', user_peer_id)
+        return
+    end
+
+    local vehicle_id = tonumber(args[2])
+    if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
+        server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+        return
+    end
+
+    if vehicle_id == -1 then
+        g_mark[user_peer_id] = {}
+        server.announce(getAnnounceName(), string.format('%s cleared all local markers', getPlayerDisplayName(user_peer_id)), user_peer_id)
+    else
+        local info = getVehicleInfo(vehicle_id)
+        if info == nil then
+            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            return
+        end
+        g_mark[user_peer_id][info['vehicle_id']] = nil
+        server.announce(getAnnounceName(), string.format('%s cleared local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']), user_peer_id)
     end
 end
 
@@ -306,43 +383,52 @@ function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
     local list = {}
+    local despawn_list = {}
     for _, info in ipairs(g_savedata['list']) do
         local _, is_success = server.getVehiclePos(info['vehicle_id'])
         if is_success then
             table.insert(list, info)
         else
-            g_ui_cache.removeMapObject(-1, info['ui_id'])
-            g_ui_cache.removePopup(-1, info['ui_id'])
+            table.insert(despawn_list, info)
         end
     end
-    g_savedata['list'] = list
 
-    for _, info in pairs(g_savedata['list']) do
-        if info['mark'] then
-            local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
-            local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-            g_ui_cache.setMapObject(-1, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
-            for _, player in pairs(server.getPlayers()) do
-                local text = info['vehicle_display_name']
-                local peer_matrix, is_success = server.getPlayerPos(player['id'])
+    for _, info in pairs(list) do
+        local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
+        local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
+        for _, peer in pairs(server.getPlayers()) do
+            if info['mark'] or (g_mark[peer['id']] ~= nil and g_mark[peer['id']][info['vehicle_id']]) then
+                local popup_text = info['vehicle_display_name']
+                local peer_matrix, is_success = server.getPlayerPos(peer['id'])
                 if is_success then
-                    text = text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
+                    popup_text = popup_text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
                 end
-                g_ui_cache.setPopup(player['id'], info['ui_id'], getAnnounceName(), true, text, vehicle_x, vehicle_y, vehicle_z, 0)
+
+                g_ui_cache.setMapObject(peer['id'], info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
+                g_ui_cache.setPopup(peer['id'], info['ui_id'], getAnnounceName(), true, popup_text, vehicle_x, vehicle_y, vehicle_z, 0)
+            else
+                g_ui_cache.removeMapObject(peer['id'], info['ui_id'])
+                g_ui_cache.removePopup(peer['id'], info['ui_id'])
             end
-        else
-            g_ui_cache.removeMapObject(-1, info['ui_id'])
-            g_ui_cache.removePopup(-1, info['ui_id'])
         end
+    end
+
+    for _, info in pairs(despawn_list) do
+        for peer_id, _ in pairs(g_mark) do
+            g_mark[peer_id][info['vehicle_id']] = nil
+        end
+        g_ui_cache.removeMapObject(-1, info['ui_id'])
+        g_ui_cache.removePopup(-1, info['ui_id'])
     end
 
     for peer_id, _ in pairs(g_hide) do
-        for _, info in pairs(g_savedata['list']) do
+        for _, info in pairs(list) do
             g_ui_cache.removeMapObject(peer_id, info['ui_id'])
             g_ui_cache.removePopup(peer_id, info['ui_id'])
         end
     end
 
+    g_savedata['list'] = list
     g_ui_cache.flush()
 end
 
@@ -367,6 +453,7 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+    g_mark[peer_id] = nil
     g_hide[peer_id] = nil
     g_ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
