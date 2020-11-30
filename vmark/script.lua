@@ -279,7 +279,9 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             return
         end
         info['mark'] = false
-        server.announce(getAnnounceName(), string.format('%s cleared global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']))
+
+        local msg = string.format('%s cleared global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
+        server.announce(getAnnounceName(), msg)
     end
 end
 
@@ -340,7 +342,9 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
             return
         end
         g_mark[user_peer_id][info['vehicle_id']] = nil
-        server.announce(getAnnounceName(), string.format('%s cleared local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']), user_peer_id)
+
+        local msg = string.format('%s cleared local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
+        server.announce(getAnnounceName(), msg, user_peer_id)
     end
 end
 
