@@ -207,7 +207,12 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
     local msg = {}
     for i = #list, 1, -1 do
-        if list[i]['mark'] then
+        if g_mark[user_peer_id][list[i]['vehicle_id']] then
+            table.insert(msg, formatMessage(list[i]))
+        end
+    end
+    for i = #list, 1, -1 do
+        if list[i]['mark'] and not g_mark[user_peer_id][list[i]['vehicle_id']] then
             table.insert(msg, formatMessage(list[i]))
         end
     end
@@ -215,7 +220,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         if #msg >= num then
             break
         end
-        if not list[i]['mark'] then
+        if not list[i]['mark'] and not g_mark[user_peer_id][list[i]['vehicle_id']] then
             table.insert(msg, formatMessage(list[i]))
         end
     end
