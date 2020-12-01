@@ -172,7 +172,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
     local function formatMessage(info)
         local mark = '-'
-        if g_mark[user_peer_id] ~= nil and g_mark[user_peer_id][info['vehicle_id']] then
+        if g_mark[user_peer_id][info['vehicle_id']] then
             mark = 'L'
         elseif info['mark'] then
             mark = 'G'
@@ -310,10 +310,6 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
         end
         info = g_savedata['list'][#g_savedata['list']]
     end
-
-    if g_mark[user_peer_id] == nil then
-        g_mark[user_peer_id] = {}
-    end
     g_mark[user_peer_id][info['vehicle_id']] = true
 
     local msg = string.format('%s set local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
@@ -386,6 +382,17 @@ end
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
 
+    for _, peer in pairs(server.getPlayers()) do
+        if g_mark[peer['id']] == nil then
+            g_mark[peer['id']] = {}
+        end
+    end
+    for peer_id, _ in pairs(g_mark) do
+        if not getPlayerExists(peer_id) then
+            g_mark[peer_id] = nil
+        end
+    end
+
     local list = {}
     local despawn_list = {}
     for _, info in ipairs(g_savedata['list']) do
@@ -401,7 +408,7 @@ function onTick(game_ticks)
         local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
         local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
         for _, peer in pairs(server.getPlayers()) do
-            if info['mark'] or (g_mark[peer['id']] ~= nil and g_mark[peer['id']][info['vehicle_id']]) then
+            if info['mark'] or g_mark[peer['id']][info['vehicle_id']] then
                 local popup_text = info['vehicle_display_name']
                 local peer_matrix, is_success = server.getPlayerPos(peer['id'])
                 if is_success then
@@ -457,7 +464,6 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
-    g_mark[peer_id] = nil
     g_hide[peer_id] = nil
     g_ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
@@ -662,6 +668,11 @@ function getAnnounceName()
     local playlist_index = server.getPlaylistIndexCurrent()
     local playlist_data = server.getPlaylistData(playlist_index)
     return string.format('[%s]', playlist_data['name'])
+end
+
+function getPlayerExists(peer_id)
+    local _, is_success = server.getPlayerName(peer_id)
+    return is_success
 end
 
 function getPlayerDisplayName(peer_id)
