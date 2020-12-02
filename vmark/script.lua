@@ -29,33 +29,43 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
         elseif args[1] == 'show' then
             execShow(user_peer_id, is_admin, is_auth, args)
         else
-            server.announce(getAnnounceName(), string.format('error: undefined subcommand: "%s"', args[1]), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: undefined subcommand: "%s"', args[1]),
+                user_peer_id
+            )
         end
     end
 end
 
 function execHelp(user_peer_id, is_admin, is_auth, args)
     if #args == 2 and args[2] == 'list' then
-        server.announce(getAnnounceName(),
-            g_cmd .. ' list [OPTIONS]\n' ..
-            '\n' ..
-            'OPTIONS:\n' ..
-            '-peer PEER_ID\n' ..
-            '-name VEHICLE_NAME\n' ..
-            '-sort ([!]id | [!]dist | [!]peer | [!]name)',
+        server.announce(
+            getAnnounceName(),
+            (
+                g_cmd .. ' list [OPTIONS]\n' ..
+                '\n' ..
+                'OPTIONS:\n' ..
+                '-peer PEER_ID\n' ..
+                '-name VEHICLE_NAME\n' ..
+                '-sort ([!]id | [!]dist | [!]peer | [!]name)'
+            ),
             user_peer_id
         )
         return
     end
-    server.announce(getAnnounceName(),
-        g_cmd .. ' list [OPTIONS]\n' ..
-        g_cmd .. ' set [VEHICLE_ID]\n' ..
-        g_cmd .. ' clear VEHICLE_ID\n' ..
-        g_cmd .. ' restore\n' ..
-        g_cmd .. ' setlocal [VEHICLE_ID]\n' ..
-        g_cmd .. ' clearlocal VEHICLE_ID\n' ..
-        g_cmd .. ' hide\n' ..
-        g_cmd .. ' show',
+    server.announce(
+        getAnnounceName(),
+        (
+            g_cmd .. ' list [OPTIONS]\n' ..
+            g_cmd .. ' set [VEHICLE_ID]\n' ..
+            g_cmd .. ' clear VEHICLE_ID\n' ..
+            g_cmd .. ' restore\n' ..
+            g_cmd .. ' setlocal [VEHICLE_ID]\n' ..
+            g_cmd .. ' clearlocal VEHICLE_ID\n' ..
+            g_cmd .. ' hide\n' ..
+            g_cmd .. ' show'
+        ),
         user_peer_id
     )
 end
@@ -68,33 +78,57 @@ function execList(user_peer_id, is_admin, is_auth, args)
     for i = 2, #args, 2 do
         if args[i] == '-num' then
             if i + 1 > #args then
-                server.announce(getAnnounceName(), 'error: missing argument to "-num"', user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    'error: missing argument to "-num"',
+                    user_peer_id
+                )
                 return
             end
             num = tonumber(args[i + 1])
             if num == fail or num < 0 or math.floor(num) ~= num then
-                server.announce(getAnnounceName(), string.format('error: not a positive integer: "%s"', args[i + 1]), user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    string.format('error: not a positive integer: "%s"', args[i + 1]),
+                    user_peer_id
+                )
                 return
             end
         elseif args[i] == '-peer' then
             if i + 1 > #args then
-                server.announce(getAnnounceName(), 'error: missing argument to "-peer"', user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    'error: missing argument to "-peer"',
+                    user_peer_id
+                )
                 return
             end
             peer_id = tonumber(args[i + 1])
             if peer_id == fail or math.floor(peer_id) ~= peer_id then
-                server.announce(getAnnounceName(), string.format('error: not a integer: "%s"', args[i + 1]), user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    string.format('error: not a integer: "%s"', args[i + 1]),
+                    user_peer_id
+                )
                 return
             end
         elseif args[i] == '-name' then
             if i + 1 > #args then
-                server.announce(getAnnounceName(), 'error: missing argument to "-name"', user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    'error: missing argument to "-name"',
+                    user_peer_id
+                )
                 return
             end
             vehicle_name = args[i + 1]
         elseif args[i] == '-sort' then
             if i + 1 > #args then
-                server.announce(getAnnounceName(), 'error: missing argument to "-sort"', user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    'error: missing argument to "-sort"',
+                    user_peer_id
+                )
                 return
             end
             sort = args[i + 1]
@@ -102,13 +136,21 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 sort ~= 'dist' and sort ~= '!dist' and
                 sort ~= 'peer' and sort ~= '!peer' and
                 sort ~= 'name' and sort ~= '!name' then
-                server.announce(getAnnounceName(), string.format('error: invalid sort key: "%s"', sort), user_peer_id)
+                server.announce(
+                    getAnnounceName(),
+                    string.format('error: invalid sort key: "%s"', sort),
+                    user_peer_id
+                )
                 return
             end
         elseif args[i] == '-help' then
             return execHelp(user_peer_id, is_admin, is_auth, {'help', 'list'})
         else
-            server.announce(getAnnounceName(), string.format('error: invalid argument: "%s"', args[i]), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: invalid argument: "%s"', args[i]),
+                user_peer_id
+            )
             return
         end
     end
@@ -234,7 +276,11 @@ end
 
 function execSet(user_peer_id, is_admin, is_auth, args)
     if #args > 2 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: too many arguments',
+            user_peer_id
+        )
         return
     end
 
@@ -242,36 +288,58 @@ function execSet(user_peer_id, is_admin, is_auth, args)
     if #args == 2 then
         local vehicle_id = tonumber(args[2])
         if vehicle_id == fail or vehicle_id < 0 or math.floor(vehicle_id) ~= vehicle_id then
-            server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: not a vehicle_id: "%s"', args[2]),
+                user_peer_id
+            )
             return
         end
         info = getVehicleInfo(vehicle_id)
         if info == nil then
-            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: unknown vehicle: %d', vehicle_id),
+                user_peer_id
+            )
             return
         end
     else
         if #g_savedata['list'] <= 0 then
-            server.announce(getAnnounceName(), 'error: no vehicle spawned yet', user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                'error: no vehicle spawned yet',
+                user_peer_id
+            )
             return
         end
         info = g_savedata['list'][#g_savedata['list']]
     end
     info['mark'] = true
 
-    local msg = string.format('%s set global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
-    server.announce(getAnnounceName(), msg)
+    server.announce(
+        getAnnounceName(),
+        string.format('%s set global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
+    )
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
     if #args ~= 2 then
-        server.announce(getAnnounceName(), 'error: missing or extra arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: missing or extra arguments',
+            user_peer_id
+        )
         return
     end
 
     local vehicle_id = tonumber(args[2])
     if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
-        server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            string.format('error: not a vehicle_id: "%s"', args[2]),
+            user_peer_id
+        )
         return
     end
 
@@ -289,23 +357,36 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         for _, info in pairs(g_savedata['list']) do
             info['mark'] = false
         end
-        server.announce(getAnnounceName(), string.format('%s cleared all global markers', getPlayerDisplayName(user_peer_id)))
+        server.announce(
+            getAnnounceName(),
+            string.format('%s cleared all global markers', getPlayerDisplayName(user_peer_id))
+        )
     else
         local info = getVehicleInfo(vehicle_id)
         if info == nil then
-            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: unknown vehicle: %d', vehicle_id),
+                user_peer_id
+            )
             return
         end
         info['mark'] = false
 
-        local msg = string.format('%s cleared global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
-        server.announce(getAnnounceName(), msg)
+        server.announce(
+            getAnnounceName(),
+            string.format('%s cleared global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
+        )
     end
 end
 
 function execRestore(user_peer_id, is_admin, is_auth, args)
     if #args > 1 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: too many arguments',
+            user_peer_id
+        )
         return
     end
     for _, vehicle_id in pairs(g_savedata['bak']) do
@@ -314,12 +395,19 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
             info['mark'] = true
         end
     end
-    server.announce(getAnnounceName(), string.format('%s restored global markers', getPlayerDisplayName(user_peer_id)))
+    server.announce(
+        getAnnounceName(),
+        string.format('%s restored global markers', getPlayerDisplayName(user_peer_id))
+    )
 end
 
 function execSetLocal(user_peer_id, is_admin, is_auth, args)
     if #args > 2 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: too many arguments',
+            user_peer_id
+        )
         return
     end
 
@@ -327,71 +415,121 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
     if #args == 2 then
         local vehicle_id = tonumber(args[2])
         if vehicle_id == fail or vehicle_id < 0 or math.floor(vehicle_id) ~= vehicle_id then
-            server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: not a vehicle_id: "%s"', args[2]),
+                user_peer_id
+            )
             return
         end
         info = getVehicleInfo(vehicle_id)
         if info == nil then
-            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: unknown vehicle: %d', vehicle_id),
+                user_peer_id
+            )
             return
         end
     else
         if #g_savedata['list'] <= 0 then
-            server.announce(getAnnounceName(), 'error: no vehicle spawned yet', user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                'error: no vehicle spawned yet',
+                user_peer_id
+            )
             return
         end
         info = g_savedata['list'][#g_savedata['list']]
     end
     g_mark[user_peer_id][info['vehicle_id']] = true
 
-    local msg = string.format('%s set local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
-    server.announce(getAnnounceName(), msg, user_peer_id)
+    server.announce(
+        getAnnounceName(),
+        string.format('%s set local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']),
+        user_peer_id
+    )
 end
 
 function execClearLocal(user_peer_id, is_admin, is_auth, args)
     if #args ~= 2 then
-        server.announce(getAnnounceName(), 'error: missing or extra arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: missing or extra arguments',
+            user_peer_id
+        )
         return
     end
 
     local vehicle_id = tonumber(args[2])
     if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
-        server.announce(getAnnounceName(), string.format('error: not a vehicle_id: "%s"', args[2]), user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            string.format('error: not a vehicle_id: "%s"', args[2]),
+            user_peer_id
+        )
         return
     end
 
     if vehicle_id == -1 then
         g_mark[user_peer_id] = {}
-        server.announce(getAnnounceName(), string.format('%s cleared all local markers', getPlayerDisplayName(user_peer_id)), user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            string.format('%s cleared all local markers', getPlayerDisplayName(user_peer_id)),
+            user_peer_id
+        )
     else
         local info = getVehicleInfo(vehicle_id)
         if info == nil then
-            server.announce(getAnnounceName(), string.format('error: unknown vehicle: %d', vehicle_id), user_peer_id)
+            server.announce(
+                getAnnounceName(),
+                string.format('error: unknown vehicle: %d', vehicle_id),
+                user_peer_id
+            )
             return
         end
         g_mark[user_peer_id][info['vehicle_id']] = nil
 
-        local msg = string.format('%s cleared local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
-        server.announce(getAnnounceName(), msg, user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            string.format('%s cleared local marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name']),
+            user_peer_id
+        )
     end
 end
 
 function execHide(user_peer_id, is_admin, is_auth, args)
     if #args > 1 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: too many arguments',
+            user_peer_id
+        )
         return
     end
     g_hide[user_peer_id] = true
-    server.announce(getAnnounceName(), 'markers are now invisible', user_peer_id)
+    server.announce(
+        getAnnounceName(),
+        'markers are now invisible',
+        user_peer_id
+    )
 end
 
 function execShow(user_peer_id, is_admin, is_auth, args)
     if #args > 1 then
-        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        server.announce(
+            getAnnounceName(),
+            'error: too many arguments',
+            user_peer_id
+        )
         return
     end
     g_hide[user_peer_id] = nil
-    server.announce(getAnnounceName(), 'markers are now visible', user_peer_id)
+    server.announce(
+        getAnnounceName(),
+        'markers are now visible',
+        user_peer_id
+    )
 end
 
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
