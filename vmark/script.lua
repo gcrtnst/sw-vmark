@@ -390,7 +390,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         return
     end
     for _, vehicle_id in pairs(g_savedata['bak']) do
-        info = getVehicleInfo(vehicle_id)
+        local info = getVehicleInfo(vehicle_id)
         if info ~= nil then
             info['mark'] = true
         end
