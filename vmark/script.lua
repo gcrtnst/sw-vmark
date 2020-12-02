@@ -18,6 +18,8 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             execSet(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clear' then
             execClear(user_peer_id, is_admin, is_auth, args)
+        elseif args[1] == 'restore' then
+            execRestore(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'setlocal' then
             execSetLocal(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clearlocal' then
@@ -49,6 +51,7 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
         g_cmd .. ' list [OPTIONS]\n' ..
         g_cmd .. ' set [VEHICLE_ID]\n' ..
         g_cmd .. ' clear VEHICLE_ID\n' ..
+        g_cmd .. ' restore\n' ..
         g_cmd .. ' setlocal [VEHICLE_ID]\n' ..
         g_cmd .. ' clearlocal VEHICLE_ID\n' ..
         g_cmd .. ' hide\n' ..
@@ -273,6 +276,16 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     end
 
     if vehicle_id == -1 then
+        local bak = {}
+        for _, info in pairs(g_savedata['list']) do
+            if info['mark'] then
+                table.insert(bak, info['vehicle_id'])
+            end
+        end
+        if #bak > 0 then
+            g_savedata['bak'] = bak
+        end
+
         for _, info in pairs(g_savedata['list']) do
             info['mark'] = false
         end
@@ -288,6 +301,20 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         local msg = string.format('%s cleared global marker on %s', getPlayerDisplayName(user_peer_id), info['vehicle_display_name'])
         server.announce(getAnnounceName(), msg)
     end
+end
+
+function execRestore(user_peer_id, is_admin, is_auth, args)
+    if #args > 1 then
+        server.announce(getAnnounceName(), 'error: too many arguments', user_peer_id)
+        return
+    end
+    for _, vehicle_id in pairs(g_savedata['bak']) do
+        info = getVehicleInfo(vehicle_id)
+        if info ~= nil then
+            info['mark'] = true
+        end
+    end
+    server.announce(getAnnounceName(), string.format('%s restored global markers', getPlayerDisplayName(user_peer_id)))
 end
 
 function execSetLocal(user_peer_id, is_admin, is_auth, args)
@@ -449,11 +476,12 @@ function onTick(game_ticks)
 end
 
 function onCreate(is_world_create)
-    if g_savedata['version'] ~= 15 then
+    if g_savedata['version'] ~= 16 then
         g_savedata = {
-            ['version'] = 15,
+            ['version'] = 16,
             ['time'] = 0,
             ['list'] = {},
+            ['bak'] = {},
         }
     end
 
