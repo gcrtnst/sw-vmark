@@ -1,26 +1,47 @@
-A custom command to display the location of a vehicle in view or on a map.
+Vehicle Marker is a custom command that displays the location of a vehicle in view or on a map.
 
 [h1]Install[/h1]
-1. Subscribe to this work.
-2. Create a new world with the "Vehicle Marker" enabled.
-   New Game > Enable Addons > Workshop > Vehicle Marker
+[olist]
+    [*]Subscribe to this work.
+    [*]Create a new world with the "Vehicle Marker" enabled.
+[/olist]
 
 [h1]Usage[/h1]
-Operate by typing commands in the chat field.
+[olist]
+    [*]Use [b]?vmark list[/b] to display the list of vehicles.
+    [*]Select the vehicle you want to set the marker from the vehicle list.
+    [*]Use [b]?vmark set VEHICLE_ID[/b] to set the marker. [b]VEHICLE_ID[/b] is the leftmost number in the vehicle list.
+    [*]Use [b]?vmark clear -1[/b] to remove the marker.
+[/olist]
+
+[h1]Commands[/h1]
 
 [b]?vmark list [OPTIONS][/b]
-Lists recently spawned vehicles.
-For options, see [b]?vmark list OPTIONS[/b] below.
-For the output format, see [b]?vmark list OUTPUT FORMAT[/b] below.
+Lists the vehicles present in the world.
+For options, see [b]OPTIONS for "?vmark list"[/b] below.
+For the output format, see [b]Output format of "?vmark list"[/b] below.
 
 [b]?vmark set [VEHICLE_ID][/b]
-Mark the vehicle.
-If [b]VEHICLE_ID[/b] is not specified, it marks the most recently spawned vehicle.
-In multiplayer, the marker will be shown to everyone.
+Set the global marker.
+If [b]VEHICLE_ID[/b] is not specified, it sets the marker to the most recently spawned vehicle.
+The global marker will be shown to all players.
 
 [b]?vmark clear VEHICLE_ID[/b]
-Erase the markers.
-If [b]VEHICLE_ID[/b] is set to -1, all markers will be erased.
+Erase the global marker.
+If -1 is specified for [b]VEHICLE_ID[/b], it will erase all global markers.
+
+[b]?vmark restore[/b]
+Restores global markers that were accidentally erased by mistake.
+Only markers that were erased with [b]?vmark clear -1[/b] can be restored. Individually-erased global markers cannot be restored. Local markers cannot be restored either.
+
+[b]?vmark setlocal [VEHICLE_ID][/b]
+Set the local marker.
+If [b]VEHICLE_ID[/b] is not specified, it will set the marker to the most recently spawned vehicle.
+The local marker will only be visible to the person who set it.
+
+[b]?vmark clearlocal VEHICLE_ID[/b]
+Erase the local marker.
+If -1 is specified for [b]VEHICLE_ID[/b], it will erase all local markers.
 
 [b]?vmark hide[/b]
 Temporarily hides all markers.
@@ -33,9 +54,9 @@ Show hidden markers again.
 Display the usage of the command.
 Specify [b]list[/b] as an argument to show how to use [b]?vmark list[/b].
 
-[h1]?vmark list OPTIONS[/h1]
+[h1]OPTIONS for "?vmark list"[/h1]
 [b]-num NUM[/b]
-Specify the number of output items.
+Specify the number of output items. The default is 5.
 
 [b]-peer PEER_ID[/b]
 Filter the output with [b]PEER_ID[/b].
@@ -57,15 +78,15 @@ You can prefix the arguments with [b]![/b] at the beginning of an argument to so
 [b]-help[/b]
 Show usage.
 
-[h1]?vmark list OUTPUT FORMAT[/h1]
+[h1]Output format of "?vmark list"[/h1]
 The output format is as follows
 [b]MARKER_EXISTS VEHICLE_ID SPAWN_TIME DIST PEER_NAME#PEER_ID "VEHICLE_NAME"[/b]
 
 [b]MARKER_EXISTS[/b]
-Display [b]M[/b] if the vehicle is marked, and [b]-[/b] if it is not.
+Display [b]G[/b] if a global marker is set, [b]L[/b] if a local marker is set, or [b]-[/b] if no marker is set.
 
 [b]VEHICLE_ID[/b]
-Display the ID of a vehicle. Arguments for [b]?vmark set[/b] and [b]?vmark clear[/b].
+Display a vehicle ID. Use it to specify a vehicle for commands such as [b]?vmark set[/b].
 
 [b]SPAWN_TIME[/b]
 Displays the in-game time that has elapsed since the vehicle spawned.
@@ -74,11 +95,11 @@ Displays the in-game time that has elapsed since the vehicle spawned.
 Displays the distance to the player.
 
 [b]PEER_NAME[/b]
-Displays the ID of the player who spawned that vehicle.
+Displays the name of the player who spawned that vehicle.
 For vehicles spawned by a script, it will be displayed as [b]{script}[/b].
 
 [b]PEER_ID[/b]
-Displays the player's ID.
+Displays the ID of the player who spawned that vehicle.
 If the vehicle was spawned by the script, it will not be displayed.
 
 [b]VEHICLE_NAME[/b]
