@@ -175,12 +175,12 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local function getVehicleDist(info)
-        local player_matrix, is_success_player = server.getPlayerPos(user_peer_id)
+        local peer_matrix, is_success_peer = server.getPlayerPos(user_peer_id)
         local vehicle_matrix, is_success_vehicle = server.getVehiclePos(info['vehicle_id'])
-        if not is_success_player or not is_success_vehicle then
+        if not is_success_peer or not is_success_vehicle then
             return nil
         end
-        return matrix.distance(player_matrix, vehicle_matrix)
+        return matrix.distance(peer_matrix, vehicle_matrix)
     end
 
     local function filterVehicleList(list)
@@ -930,8 +930,8 @@ end
 function getPeerIDList(peer_id)
     local peer_id_list = {}
     if peer_id < 0 then
-        for _, player in pairs(server.getPlayers()) do
-            table.insert(peer_id_list, player['id'])
+        for _, peer in pairs(server.getPlayers()) do
+            table.insert(peer_id_list, peer['id'])
         end
     else
         table.insert(peer_id_list, peer_id)
