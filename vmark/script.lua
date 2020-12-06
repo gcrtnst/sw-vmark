@@ -652,7 +652,7 @@ function onTick(game_ticks)
         local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
         local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
         for _, peer in pairs(peer_list) do
-            if info['mark'] or g_mark[peer['id']][info['vehicle_id']] then
+            if (info['mark'] or g_mark[peer['id']][info['vehicle_id']]) and (not g_hide[peer['id']]) then
                 local popup_text = info['vehicle_display_name']
                 local peer_matrix, is_success = server.getPlayerPos(peer['id'])
                 if is_success then
@@ -661,9 +661,6 @@ function onTick(game_ticks)
 
                 g_uim.setMapObject(peer['id'], info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
                 g_uim.setPopup(peer['id'], info['ui_id'], getAnnounceName(), true, popup_text, vehicle_x, vehicle_y, vehicle_z, 0)
-            else
-                g_uim.removeMapObject(peer['id'], info['ui_id'])
-                g_uim.removePopup(peer['id'], info['ui_id'])
             end
         end
     end
@@ -671,15 +668,6 @@ function onTick(game_ticks)
     for _, info in pairs(despawn_list) do
         for peer_id, _ in pairs(g_mark) do
             g_mark[peer_id][info['vehicle_id']] = nil
-        end
-        g_uim.removeMapObject(-1, info['ui_id'])
-        g_uim.removePopup(-1, info['ui_id'])
-    end
-
-    for peer_id, _ in pairs(g_hide) do
-        for _, info in pairs(list) do
-            g_uim.removeMapObject(peer_id, info['ui_id'])
-            g_uim.removePopup(peer_id, info['ui_id'])
         end
     end
 
@@ -742,19 +730,6 @@ function buildUIManager()
         end
     end
 
-    function uim.removeMapObject(peer_id, ui_id)
-        if peer_id < 0 then
-            for key, map_object in pairs(uim['_map_object_2']) do
-                if map_object['ui_id'] == ui_id then
-                    uim['_map_object_2'][key] = nil
-                end
-            end
-        else
-            local key = string.format('%d,%d', peer_id, ui_id)
-            uim['_map_object_2'][key] = nil
-        end
-    end
-
     function uim.setPopup(peer_id, ui_id, name, is_show, text, x, y, z, render_distance)
         for _, peer_id in pairs(getPeerIDList(peer_id)) do
             local key = string.format('%d,%d', peer_id, ui_id)
@@ -769,19 +744,6 @@ function buildUIManager()
                 ['z'] = z,
                 ['render_distance'] = render_distance
             }
-        end
-    end
-
-    function uim.removePopup(peer_id, ui_id)
-        if peer_id < 0 then
-            for key, popup in pairs(uim['_popup_2']) do
-                if popup['ui_id'] == ui_id then
-                    uim['_popup_2'][key] = nil
-                end
-            end
-        else
-            local key = string.format('%d,%d', peer_id, ui_id)
-            uim['_popup_2'][key] = nil
         end
     end
 
@@ -869,7 +831,8 @@ function buildUIManager()
             end
         end
 
-        uim['_map_object_1'] = copyTable(uim['_map_object_2'])
+        uim['_map_object_1'] = uim['_map_object_2']
+        uim['_map_object_2'] = {}
     end
 
     function uim.flushPopup()
@@ -903,7 +866,8 @@ function buildUIManager()
             end
         end
 
-        uim['_popup_1'] = copyTable(uim['_popup_2'])
+        uim['_popup_1'] = uim['_popup_2']
+        uim['_popup_2'] = {}
     end
 
     return uim
