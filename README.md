@@ -1,4 +1,3 @@
 # Vehicle Marker
-Available at https://steamcommunity.com/sharedfiles/filedetails/?id=2279684060
-- English Description: [description_en.txt](description_en.txt)
-- Japanese Description: [description_ja.txt](description_ja.txt)
+Vehicle Marker is a custom command that displays the location of a vehicle in view or on a map.
+See https://steamcommunity.com/sharedfiles/filedetails/?id=2279684060 for more information.
