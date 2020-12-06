@@ -638,9 +638,12 @@ function onTick(game_ticks)
     end
 
     local function onVehicleExists(info, vehicle_matrix)
-        local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
+        local vehicle_x, vehicle_y, vehicle_z
         for _, peer in pairs(peer_list) do
             if (info['mark'] or g_mark[peer['id']][info['vehicle_id']]) and (not g_hide[peer['id']]) then
+                if vehicle_x == nil or vehicle_y == nil or vehicle_z == nil then
+                    vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
+                end
                 local popup_text = info['vehicle_display_name']
                 local peer_matrix, is_success = server.getPlayerPos(peer['id'])
                 if is_success then
