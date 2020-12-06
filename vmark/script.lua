@@ -638,10 +638,12 @@ function onTick(game_ticks)
     end
 
     local function onVehicleExists(info, vehicle_matrix)
+        local vehicle_matrix, _
         local vehicle_x, vehicle_y, vehicle_z
         for _, peer in pairs(peer_list) do
             if (info['mark'] or g_mark[peer['id']][info['vehicle_id']]) and (not g_hide[peer['id']]) then
-                if vehicle_x == nil or vehicle_y == nil or vehicle_z == nil then
+                if vehicle_matrix == nil then
+                    vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
                     vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
                 end
                 local popup_text = info['vehicle_display_name']
@@ -664,10 +666,10 @@ function onTick(game_ticks)
 
     local list = {}
     for _, info in ipairs(g_savedata['list']) do
-        local vehicle_matrix, is_success = server.getVehiclePos(info['vehicle_id'])
+        local _, is_success = server.getVehicleFireCount(info['vehicle_id'])
         if is_success then
             table.insert(list, info)
-            onVehicleExists(info, vehicle_matrix)
+            onVehicleExists(info)
         else
             onVehicleDespawn(info)
         end
