@@ -1,7 +1,7 @@
 g_cmd = '?vmark'
 g_mark = {}
 g_hide = {}
-g_ui_cache = nil
+g_uim = nil
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...)
     local args = {...}
@@ -659,11 +659,11 @@ function onTick(game_ticks)
                     popup_text = popup_text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
                 end
 
-                g_ui_cache.setMapObject(peer['id'], info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
-                g_ui_cache.setPopup(peer['id'], info['ui_id'], getAnnounceName(), true, popup_text, vehicle_x, vehicle_y, vehicle_z, 0)
+                g_uim.setMapObject(peer['id'], info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
+                g_uim.setPopup(peer['id'], info['ui_id'], getAnnounceName(), true, popup_text, vehicle_x, vehicle_y, vehicle_z, 0)
             else
-                g_ui_cache.removeMapObject(peer['id'], info['ui_id'])
-                g_ui_cache.removePopup(peer['id'], info['ui_id'])
+                g_uim.removeMapObject(peer['id'], info['ui_id'])
+                g_uim.removePopup(peer['id'], info['ui_id'])
             end
         end
     end
@@ -672,19 +672,19 @@ function onTick(game_ticks)
         for peer_id, _ in pairs(g_mark) do
             g_mark[peer_id][info['vehicle_id']] = nil
         end
-        g_ui_cache.removeMapObject(-1, info['ui_id'])
-        g_ui_cache.removePopup(-1, info['ui_id'])
+        g_uim.removeMapObject(-1, info['ui_id'])
+        g_uim.removePopup(-1, info['ui_id'])
     end
 
     for peer_id, _ in pairs(g_hide) do
         for _, info in pairs(list) do
-            g_ui_cache.removeMapObject(peer_id, info['ui_id'])
-            g_ui_cache.removePopup(peer_id, info['ui_id'])
+            g_uim.removeMapObject(peer_id, info['ui_id'])
+            g_uim.removePopup(peer_id, info['ui_id'])
         end
     end
 
     g_savedata['list'] = list
-    g_ui_cache.flush()
+    g_uim.flush()
 end
 
 function onCreate(is_world_create)
@@ -697,7 +697,7 @@ function onCreate(is_world_create)
         }
     end
 
-    g_ui_cache = buildUICache()
+    g_uim = buildUIManager()
     for _, info in pairs(g_savedata['list']) do
         server.removeMapObject(-1, info['ui_id'])
         server.removePopup(-1, info['ui_id'])
@@ -705,26 +705,26 @@ function onCreate(is_world_create)
 end
 
 function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
-    g_ui_cache.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+    g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
     g_hide[peer_id] = nil
-    g_ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+    g_uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
 
-function buildUICache()
-    local ui_cache = {
+function buildUIManager()
+    local uim = {
         ['_map_object_1'] = {},
         ['_map_object_2'] = {},
         ['_popup_1'] = {},
         ['_popup_2'] = {}
     }
 
-    function ui_cache.setMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label)
+    function uim.setMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label)
         for _, peer_id in pairs(getPeerIDList(peer_id)) do
             local key = string.format('%d,%d', peer_id, ui_id)
-            ui_cache['_map_object_2'][key] = {
+            uim['_map_object_2'][key] = {
                 ['peer_id'] = peer_id,
                 ['ui_id'] = ui_id,
                 ['position_type'] = position_type,
@@ -742,23 +742,23 @@ function buildUICache()
         end
     end
 
-    function ui_cache.removeMapObject(peer_id, ui_id)
+    function uim.removeMapObject(peer_id, ui_id)
         if peer_id < 0 then
-            for key, map_object in pairs(ui_cache['_map_object_2']) do
+            for key, map_object in pairs(uim['_map_object_2']) do
                 if map_object['ui_id'] == ui_id then
-                    ui_cache['_map_object_2'][key] = nil
+                    uim['_map_object_2'][key] = nil
                 end
             end
         else
             local key = string.format('%d,%d', peer_id, ui_id)
-            ui_cache['_map_object_2'][key] = nil
+            uim['_map_object_2'][key] = nil
         end
     end
 
-    function ui_cache.setPopup(peer_id, ui_id, name, is_show, text, x, y, z, render_distance)
+    function uim.setPopup(peer_id, ui_id, name, is_show, text, x, y, z, render_distance)
         for _, peer_id in pairs(getPeerIDList(peer_id)) do
             local key = string.format('%d,%d', peer_id, ui_id)
-            ui_cache['_popup_2'][key] = {
+            uim['_popup_2'][key] = {
                 ['peer_id'] = peer_id,
                 ['ui_id'] = ui_id,
                 ['name'] = name,
@@ -772,72 +772,72 @@ function buildUICache()
         end
     end
 
-    function ui_cache.removePopup(peer_id, ui_id)
+    function uim.removePopup(peer_id, ui_id)
         if peer_id < 0 then
-            for key, popup in pairs(ui_cache['_popup_2']) do
+            for key, popup in pairs(uim['_popup_2']) do
                 if popup['ui_id'] == ui_id then
-                    ui_cache['_popup_2'][key] = nil
+                    uim['_popup_2'][key] = nil
                 end
             end
         else
             local key = string.format('%d,%d', peer_id, ui_id)
-            ui_cache['_popup_2'][key] = nil
+            uim['_popup_2'][key] = nil
         end
     end
 
-    function ui_cache.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
-        for key, map_object in pairs(ui_cache['_map_object_1']) do
+    function uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+        for key, map_object in pairs(uim['_map_object_1']) do
             if map_object['peer_id'] == peer_id then
                 server.removeMapObject(map_object['peer_id'], map_object['ui_id'])
-                ui_cache['_map_object_1'][key] = nil
+                uim['_map_object_1'][key] = nil
             end
         end
 
-        for key, popup in pairs(ui_cache['_popup_1']) do
+        for key, popup in pairs(uim['_popup_1']) do
             if popup['peer_id'] == peer_id then
                 server.removePopup(popup['peer_id'], popup['ui_id'])
-                ui_cache['_popup_1'][key] = nil
+                uim['_popup_1'][key] = nil
             end
         end
     end
 
-    function ui_cache.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
-        for key, map_object in pairs(ui_cache['_map_object_1']) do
+    function uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+        for key, map_object in pairs(uim['_map_object_1']) do
             if map_object['peer_id'] == peer_id then
-                ui_cache['_map_object_1'][key] = nil
+                uim['_map_object_1'][key] = nil
             end
         end
-        for key, map_object in pairs(ui_cache['_map_object_2']) do
+        for key, map_object in pairs(uim['_map_object_2']) do
             if map_object['peer_id'] == peer_id then
-                ui_cache['_map_object_2'][key] = nil
+                uim['_map_object_2'][key] = nil
             end
         end
-        for key, popup in pairs(ui_cache['_popup_1']) do
+        for key, popup in pairs(uim['_popup_1']) do
             if popup['peer_id'] == peer_id then
-                ui_cache['_popup_1'][key] = nil
+                uim['_popup_1'][key] = nil
             end
         end
-        for key, popup in pairs(ui_cache['_popup_2']) do
+        for key, popup in pairs(uim['_popup_2']) do
             if popup['peer_id'] == peer_id then
-                ui_cache['_popup_2'][key] = nil
+                uim['_popup_2'][key] = nil
             end
         end
     end
 
-    function ui_cache.flush()
-        ui_cache.flushMapObject()
-        ui_cache.flushPopup()
+    function uim.flush()
+        uim.flushMapObject()
+        uim.flushPopup()
     end
 
-    function ui_cache.flushMapObject()
-        for key, map_object in pairs(ui_cache['_map_object_1']) do
-            if ui_cache['_map_object_2'][key] == nil then
+    function uim.flushMapObject()
+        for key, map_object in pairs(uim['_map_object_1']) do
+            if uim['_map_object_2'][key] == nil then
                 server.removeMapObject(map_object['peer_id'], map_object['ui_id'])
             end
         end
 
-        for key, map_object_2 in pairs(ui_cache['_map_object_2']) do
-            local map_object_1 = ui_cache['_map_object_1'][key]
+        for key, map_object_2 in pairs(uim['_map_object_2']) do
+            local map_object_1 = uim['_map_object_1'][key]
             if map_object_1 == nil or
                 map_object_2['position_type'] ~= map_object_1['position_type'] or
                 map_object_2['marker_type'] ~= map_object_1['marker_type'] or
@@ -869,18 +869,18 @@ function buildUICache()
             end
         end
 
-        ui_cache['_map_object_1'] = copyTable(ui_cache['_map_object_2'])
+        uim['_map_object_1'] = copyTable(uim['_map_object_2'])
     end
 
-    function ui_cache.flushPopup()
-        for key, popup in pairs(ui_cache['_popup_1']) do
-            if ui_cache['_popup_2'][key] == nil then
+    function uim.flushPopup()
+        for key, popup in pairs(uim['_popup_1']) do
+            if uim['_popup_2'][key] == nil then
                 server.removePopup(popup['peer_id'], popup['ui_id'])
             end
         end
 
-        for key, popup_2 in pairs(ui_cache['_popup_2']) do
-            local popup_1 = ui_cache['_popup_1'][key]
+        for key, popup_2 in pairs(uim['_popup_2']) do
+            local popup_1 = uim['_popup_1'][key]
             if popup_1 == nil or
                 popup_2['name'] ~= popup_1['name'] or
                 popup_2['is_show'] ~= popup_1['is_show'] or
@@ -903,10 +903,10 @@ function buildUICache()
             end
         end
 
-        ui_cache['_popup_1'] = copyTable(ui_cache['_popup_2'])
+        uim['_popup_1'] = copyTable(uim['_popup_2'])
     end
 
-    return ui_cache
+    return uim
 end
 
 function getAnnounceName()
