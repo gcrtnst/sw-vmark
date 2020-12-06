@@ -624,8 +624,9 @@ end
 
 function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
+    local peer_list = server.getPlayers()
 
-    for _, peer in pairs(server.getPlayers()) do
+    for _, peer in pairs(peer_list) do
         if g_mark[peer['id']] == nil then
             g_mark[peer['id']] = {}
         end
@@ -650,7 +651,7 @@ function onTick(game_ticks)
     for _, info in pairs(list) do
         local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
         local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-        for _, peer in pairs(server.getPlayers()) do
+        for _, peer in pairs(peer_list) do
             if info['mark'] or g_mark[peer['id']][info['vehicle_id']] then
                 local popup_text = info['vehicle_display_name']
                 local peer_matrix, is_success = server.getPlayerPos(peer['id'])
