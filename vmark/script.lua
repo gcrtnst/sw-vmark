@@ -637,19 +637,7 @@ function onTick(game_ticks)
         end
     end
 
-    local list = {}
-    local despawn_list = {}
-    for _, info in ipairs(g_savedata['list']) do
-        local _, is_success = server.getVehiclePos(info['vehicle_id'])
-        if is_success then
-            table.insert(list, info)
-        else
-            table.insert(despawn_list, info)
-        end
-    end
-
-    for _, info in pairs(list) do
-        local vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
+    local function onVehicleExists(info, vehicle_matrix)
         local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
         for _, peer in pairs(peer_list) do
             if (info['mark'] or g_mark[peer['id']][info['vehicle_id']]) and (not g_hide[peer['id']]) then
@@ -665,9 +653,20 @@ function onTick(game_ticks)
         end
     end
 
-    for _, info in pairs(despawn_list) do
+    local function onVehicleDespawn(info)
         for peer_id, _ in pairs(g_mark) do
             g_mark[peer_id][info['vehicle_id']] = nil
+        end
+    end
+
+    local list = {}
+    for _, info in ipairs(g_savedata['list']) do
+        local vehicle_matrix, is_success = server.getVehiclePos(info['vehicle_id'])
+        if is_success then
+            table.insert(list, info)
+            onVehicleExists(info, vehicle_matrix)
+        else
+            onVehicleDespawn(info)
         end
     end
 
