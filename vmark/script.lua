@@ -637,7 +637,7 @@ function onTick(game_ticks)
         end
     end
 
-    local function onVehicleExists(info, vehicle_matrix)
+    local function onVehicleExists(info)
         local vehicle_matrix, _
         local vehicle_x, vehicle_y, vehicle_z
         for _, peer in pairs(peer_list) do
