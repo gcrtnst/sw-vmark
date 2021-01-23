@@ -679,7 +679,16 @@ function onTick(game_ticks)
     g_uim.flush()
 end
 
-function onCreate(is_world_create)
+function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+    g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+end
+
+function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+    g_hide[peer_id] = nil
+    g_uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+end
+
+function init()
     if g_savedata['version'] ~= 16 then
         g_savedata = {
             ['version'] = 16,
@@ -694,15 +703,6 @@ function onCreate(is_world_create)
         server.removeMapObject(-1, info['ui_id'])
         server.removePopup(-1, info['ui_id'])
     end
-end
-
-function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
-    g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
-end
-
-function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
-    g_hide[peer_id] = nil
-    g_uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function buildUIManager()
@@ -949,3 +949,5 @@ function reverseTable(tbl)
     end
     return new
 end
+
+init()
