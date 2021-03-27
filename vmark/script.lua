@@ -667,8 +667,8 @@ function onTick(game_ticks)
 
     local list = {}
     for _, info in ipairs(g_savedata['list']) do
-        local _, is_success = server.getVehicleFireCount(info['vehicle_id'])
-        if is_success then
+        local vehicle_exists = getVehicleExists(info['vehicle_id'])
+        if vehicle_exists then
             table.insert(list, info)
             onVehicleExists(info)
         else
@@ -907,6 +907,11 @@ function getPeerIDList(peer_id)
         table.insert(peer_id_list, peer_id)
     end
     return peer_id_list
+end
+
+function getVehicleExists(vehicle_id)
+    local _, is_success = server.getVehicleFireCount(vehicle_id)
+    return is_success
 end
 
 function getVehicleInfo(vehicle_id)
