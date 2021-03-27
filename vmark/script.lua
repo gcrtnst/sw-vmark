@@ -52,6 +52,7 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
                 g_cmd .. ' list [OPTIONS]\n' ..
                 '\n' ..
                 'OPTIONS:\n' ..
+                '-num NUM\n' ..
                 '-peer PEER_ID\n' ..
                 '-name VEHICLE_NAME\n' ..
                 '-sort ([!]id | [!]dist | [!]peer | [!]name)'
