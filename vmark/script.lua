@@ -878,9 +878,9 @@ function buildUIManager()
 end
 
 function getAnnounceName()
-    local playlist_index = server.getPlaylistIndexCurrent()
-    local playlist_data = server.getPlaylistData(playlist_index)
-    return string.format('[%s]', playlist_data['name'])
+    local addon_index = server.getAddonIndex()
+    local addon_data = server.getAddonData(addon_index)
+    return string.format('[%s]', addon_data['name'])
 end
 
 function getPlayerExists(peer_id)
