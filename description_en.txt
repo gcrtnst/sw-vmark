@@ -6,7 +6,7 @@ Vehicle Marker is a custom command that displays the location of a vehicle in vi
     [*]Create a new world with the "Vehicle Marker" enabled.
 [/olist]
 
-[h1]Usage[/h1]
+[h1]Quickstart[/h1]
 [olist]
     [*]Use [b]?vmark list[/b] to display the list of vehicles.
     [*]Select the vehicle you want to set the marker from the vehicle list.
@@ -18,8 +18,8 @@ Vehicle Marker is a custom command that displays the location of a vehicle in vi
 
 [b]?vmark list [OPTIONS][/b]
 Lists the vehicles present in the world.
-For options, see [b]OPTIONS for "?vmark list"[/b] below.
-For the output format, see [b]Output format of "?vmark list"[/b] below.
+For options, see [b]OPTIONS for "?vmark list"[/b] chapter in this document.
+For the output format, see [b]Output format of "?vmark list"[/b] chapter in this document.
 
 [b]?vmark set [VEHICLE_ID][/b]
 Set the global marker.
@@ -59,13 +59,18 @@ Specify [b]list[/b] as an argument to show how to use [b]?vmark list[/b].
 Specify the number of output items. The default is 5.
 
 [b]-peer PEER_ID[/b]
-Filter the output with [b]PEER_ID[/b].
+Change the output to only include vehicles spawned by a specific player.
+In single-player mode, the player's [b]PEER_ID[/b] will always be 0.
+In multiplayer, the player's [b]PEER_ID[/b] can be found in the player list. By default, the player list can be displayed with the [b]`[/b] key.
+If you want to see only the vehicles spawned by the script, specify -1 for [b]PEER_ID[/b].
 
 [b]-name VEHICLE_NAME[/b]
 Filter the output by vehicle name.
+[b]VEHICLE_NAME[/b] can only contain one word and cannot contain spaces.
+The search is performed as a partial match.
 
 [b]-sort ([!]id | [!]dist | [!]peer | [!]name)[/b]
-Sort the output. In the arguments, you can specify the information to be used for sorting.
+Specifies the order of the list.
 You can prefix the arguments with [b]![/b] at the beginning of an argument to sort the output in reverse order.
 [table]
 [tr][th]Argument[/th][th]Information for sorting[/th][/tr]
@@ -79,7 +84,8 @@ You can prefix the arguments with [b]![/b] at the beginning of an argument to so
 Show usage.
 
 [h1]Output format of "?vmark list"[/h1]
-The output format is as follows
+One line will be output per vehicle.
+Each line will have the following format
 [b]MARKER_EXISTS VEHICLE_ID SPAWN_TIME DIST PEER_NAME#PEER_ID "VEHICLE_NAME"[/b]
 
 [b]MARKER_EXISTS[/b]
