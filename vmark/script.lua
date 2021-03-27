@@ -186,7 +186,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
     local function filterVehicleList(list)
         local new = {}
-        for _, info in pairs(list) do
+        for _, info in ipairs(list) do
             local peer_id_matched = peer_id == nil or info['peer_id'] == peer_id
             local vehicle_name_matched = string.find(info['vehicle_display_name'], vehicle_name, 1, true) ~= fail
             if peer_id_matched and vehicle_name_matched then
@@ -381,7 +381,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
 
     if vehicle_id == -1 then
         local bak = {}
-        for _, info in pairs(g_savedata['list']) do
+        for _, info in ipairs(g_savedata['list']) do
             if info['mark'] then
                 table.insert(bak, info['vehicle_id'])
             end
@@ -390,7 +390,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             g_savedata['bak'] = bak
         end
 
-        for _, info in pairs(g_savedata['list']) do
+        for _, info in ipairs(g_savedata['list']) do
             info['mark'] = false
         end
         server.announce(
@@ -439,7 +439,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         )
         return
     end
-    for _, vehicle_id in pairs(g_savedata['bak']) do
+    for _, vehicle_id in ipairs(g_savedata['bak']) do
         local info = getVehicleInfo(vehicle_id)
         if info ~= nil then
             info['mark'] = true
@@ -700,7 +700,7 @@ function init()
     end
 
     g_uim = buildUIManager()
-    for _, info in pairs(g_savedata['list']) do
+    for _, info in ipairs(g_savedata['list']) do
         server.removeMapObject(-1, info['ui_id'])
         server.removePopup(-1, info['ui_id'])
     end
