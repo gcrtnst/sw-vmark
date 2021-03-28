@@ -85,7 +85,7 @@ end
 
 function execList(user_peer_id, is_admin, is_auth, args)
     local num = 5
-    local peer_id = nil
+    local steam_id = nil
     local vehicle_name = ''
     local sort = 'id'
     for i = 2, #args, 2 do
@@ -116,7 +116,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 )
                 return
             end
-            peer_id = tonumber(args[i + 1])
+            local peer_id = tonumber(args[i + 1])
             if peer_id == fail or math.floor(peer_id) ~= peer_id then
                 server.announce(
                     getAnnounceName(),
@@ -124,6 +124,19 @@ function execList(user_peer_id, is_admin, is_auth, args)
                     user_peer_id
                 )
                 return
+            end
+            steam_id = 'SCRIPT'
+            if peer_id >= 0 then
+                local peer = reindexTable(getPlayers(), 'id')[peer_id]
+                if peer == nil then
+                    server.announce(
+                        getAnnounceName(),
+                        string.format('error: option -peer got unassigned peer_id "%s"', peer_id),
+                        user_peer_id
+                    )
+                    return
+                end
+                steam_id = peer['steam_id']
             end
         elseif args[i] == '-name' then
             if i + 1 > #args then
@@ -189,12 +202,30 @@ function execList(user_peer_id, is_admin, is_auth, args)
         return matrix.distance(peer_matrix, vehicle_matrix)
     end
 
+    local function getPeerID(steam_id)
+        if steam_id == 'SCRIPT' then
+            return -1
+        end
+        local peer = reindexTable(getPlayers(), 'steam_id')[steam_id]
+        return peer ~= nil and peer['id'] or nil
+    end
+
+    local function getPeerSortValue(steam_id)
+        local peer_id = getPeerID(steam_id)
+        if peer_id == nil then
+            return -1
+        elseif peer_id == -1 then
+            return -2
+        end
+        return peer_id
+    end
+
     local function filterVehicleList(list)
         local new = {}
         for _, info in ipairs(list) do
-            local peer_id_matched = peer_id == nil or info['peer_id'] == peer_id
+            local steam_id_matched = steam_id == nil or info['steam_id'] == steam_id
             local vehicle_name_matched = string.find(info['vehicle_display_name'], vehicle_name, 1, true) ~= fail
-            if peer_id_matched and vehicle_name_matched then
+            if steam_id_matched and vehicle_name_matched then
                 table.insert(new, info)
             end
         end
@@ -217,11 +248,11 @@ function execList(user_peer_id, is_admin, is_auth, args)
             value_1 = getVehicleDist(info_1)
             value_2 = getVehicleDist(info_2)
         elseif sort == 'peer' then
-            value_1 = info_1['peer_id']
-            value_2 = info_2['peer_id']
+            value_1 = getPeerSortValue(info_1['steam_id'])
+            value_2 = getPeerSortValue(info_2['steam_id'])
         elseif sort == '!peer' then
-            value_1 = info_2['peer_id']
-            value_2 = info_1['peer_id']
+            value_1 = getPeerSortValue(info_2['steam_id'])
+            value_2 = getPeerSortValue(info_1['steam_id'])
         elseif sort == 'name' then
             value_1 = info_1['vehicle_name']
             value_2 = info_2['vehicle_name']
@@ -256,8 +287,9 @@ function execList(user_peer_id, is_admin, is_auth, args)
         end
 
         local peer_display_name = info['peer_display_name']
-        if info['peer_id'] >= 0 then
-            peer_display_name = string.format('%s#%d', info['peer_display_name'], info['peer_id'])
+        local peer_id = getPeerID(info['steam_id'])
+        if peer_id ~= nil and peer_id >= 0 then
+            peer_display_name = string.format('%s#%d', info['peer_display_name'], peer_id)
         end
 
         return string.format(
@@ -619,16 +651,23 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
-        ['peer_id'] = peer_id,
         ['ui_id'] = server.getMapID(),
         ['mark'] = false
     }
+
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
+
     local peer_name, is_success = server.getPlayerName(peer_id)
     info['peer_name'] = is_success and peer_name or nil
     info['peer_display_name'] = is_success and peer_name or '{script}'
+
+    info['steam_id'] = 'SCRIPT'
+    if peer_id >= 0 then
+        info['steam_id'] = reindexTable(getPlayers(), 'id')[peer_id]['steam_id']
+    end
+
     table.insert(g_savedata['list'], info)
 end
 
@@ -638,7 +677,7 @@ function onTick(game_ticks)
     end
 
     g_savedata['time'] = g_savedata['time'] + game_ticks
-    local peer_list = server.getPlayers()
+    local peer_list = getPlayers()
 
     for _, peer in pairs(peer_list) do
         if g_mark[peer['id']] == nil then
@@ -718,15 +757,33 @@ end
 
 function init()
     g_init = true
-    if g_savedata['version'] ~= 16 then
+    initSavedata()
+    initUIManager()
+end
+
+function initSavedata()
+    if g_savedata['version'] == 16 then
+        g_savedata['version'] = 17
+        for _, info in ipairs(g_savedata['list']) do
+            info['steam_id'] = 'SCRIPT'
+            if info['peer_id'] >= 0 then
+                info['steam_id'] = '90071992547409920'
+            end
+            info['peer_id'] = nil
+        end
+    end
+
+    if g_savedata['version'] ~= 17 then
         g_savedata = {
-            ['version'] = 16,
+            ['version'] = 17,
             ['time'] = 0,
             ['list'] = {},
             ['bak'] = {},
         }
     end
+end
 
+function initUIManager()
     g_uim = buildUIManager()
     for _, info in ipairs(g_savedata['list']) do
         server.removeMapObject(-1, info['ui_id'])
@@ -925,6 +982,14 @@ function getPlayerDisplayName(peer_id)
     return peer_name
 end
 
+function getPlayers()
+    local peer_list = server.getPlayers()
+    for _, peer in pairs(peer_list) do
+        peer['steam_id'] = tostring(peer['steam_id'])
+    end
+    return peer_list
+end
+
 function getPeerIDList(peer_id)
     local peer_id_list = {}
     if peer_id < 0 then
@@ -966,6 +1031,14 @@ function formatDistance(dist)
         return string.format('%dm', math.floor(dist))
     end
     return string.format('%.1fkm', dist/1000)
+end
+
+function reindexTable(tbl, key)
+    local new = {}
+    for _, value in pairs(tbl) do
+        new[value[key]] = value
+    end
+    return new
 end
 
 function copyTable(tbl)
