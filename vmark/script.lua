@@ -1,9 +1,14 @@
 g_cmd = '?vmark'
+g_init = false
 g_mark = {}
 g_hide = {}
 g_uim = nil
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...)
+    if not g_init then
+        init()
+    end
+
     local args = {...}
     if #args > 0 and args[#args] == '' then
         table.remove(args, #args)
@@ -607,6 +612,10 @@ function execShow(user_peer_id, is_admin, is_auth, args)
 end
 
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
+    if not g_init then
+        init()
+    end
+
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
@@ -624,6 +633,10 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
 end
 
 function onTick(game_ticks)
+    if not g_init then
+        init()
+    end
+
     g_savedata['time'] = g_savedata['time'] + game_ticks
     local peer_list = server.getPlayers()
 
@@ -680,16 +693,31 @@ function onTick(game_ticks)
     g_uim.flush()
 end
 
+function onCreate(is_world_create)
+    if not g_init then
+        init()
+    end
+end
+
 function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+    if not g_init then
+        init()
+    end
+
     g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+    if not g_init then
+        init()
+    end
+
     g_hide[peer_id] = nil
     g_uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function init()
+    g_init = true
     if g_savedata['version'] ~= 16 then
         g_savedata = {
             ['version'] = 16,
@@ -955,5 +983,3 @@ function reverseTable(tbl)
     end
     return new
 end
-
-init()
