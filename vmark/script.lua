@@ -746,7 +746,6 @@ function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
     end
 
     g_hide[peer_id] = nil
-    g_uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 end
 
 function init()
@@ -843,29 +842,6 @@ function buildUIManager()
             if popup['peer_id'] == peer_id then
                 server.removePopup(popup['peer_id'], popup['ui_id'])
                 uim['_popup_1'][key] = nil
-            end
-        end
-    end
-
-    function uim.onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
-        for key, map_object in pairs(uim['_map_object_1']) do
-            if map_object['peer_id'] == peer_id then
-                uim['_map_object_1'][key] = nil
-            end
-        end
-        for key, map_object in pairs(uim['_map_object_2']) do
-            if map_object['peer_id'] == peer_id then
-                uim['_map_object_2'][key] = nil
-            end
-        end
-        for key, popup in pairs(uim['_popup_1']) do
-            if popup['peer_id'] == peer_id then
-                uim['_popup_1'][key] = nil
-            end
-        end
-        for key, popup in pairs(uim['_popup_2']) do
-            if popup['peer_id'] == peer_id then
-                uim['_popup_2'][key] = nil
             end
         end
     end
