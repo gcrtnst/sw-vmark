@@ -689,6 +689,11 @@ function onTick(game_ticks)
             g_mark[peer_id] = nil
         end
     end
+    for peer_id, _ in pairs(g_hide) do
+        if not getPlayerExists(peer_id) then
+            g_hide[peer_id] = nil
+        end
+    end
 
     local function onVehicleExists(info)
         local vehicle_matrix, _
@@ -738,14 +743,6 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
     end
 
     g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
-end
-
-function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
-    if not g_init then
-        init()
-    end
-
-    g_hide[peer_id] = nil
 end
 
 function init()
