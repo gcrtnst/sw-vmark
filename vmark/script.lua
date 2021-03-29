@@ -732,12 +732,6 @@ function onTick(game_ticks)
     g_uim.flush()
 end
 
-function onCreate(is_world_create)
-    if not g_init then
-        init()
-    end
-end
-
 function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
     if not g_init then
         init()
