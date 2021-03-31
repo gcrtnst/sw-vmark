@@ -1016,14 +1016,6 @@ function formatDistance(dist)
     return string.format('%.1fkm', dist/1000)
 end
 
-function reindexTable(tbl, key)
-    local new = {}
-    for _, value in pairs(tbl) do
-        new[value[key]] = value
-    end
-    return new
-end
-
 function copyTable(tbl)
     local new = {}
     for key, value in pairs(tbl) do
