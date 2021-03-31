@@ -85,7 +85,7 @@ end
 
 function execList(user_peer_id, is_admin, is_auth, args)
     local num = 5
-    local steam_id = nil
+    local owner = nil
     local vehicle_name = ''
     local sort = 'id'
     for i = 2, #args, 2 do
@@ -125,18 +125,14 @@ function execList(user_peer_id, is_admin, is_auth, args)
                 )
                 return
             end
-            steam_id = 'SCRIPT'
-            if peer_id >= 0 then
-                local peer = reindexTable(getPlayers(), 'id')[peer_id]
-                if peer == nil then
-                    server.announce(
-                        getAnnounceName(),
-                        string.format('error: option -peer got unassigned peer_id "%s"', peer_id),
-                        user_peer_id
-                    )
-                    return
-                end
-                steam_id = peer['steam_id']
+            owner = getOwner(peer_id)
+            if owner == nil then
+                server.announce(
+                    getAnnounceName(),
+                    string.format('error: option -peer got unassigned peer_id "%s"', peer_id),
+                    user_peer_id
+                )
+                return
             end
         elseif args[i] == '-name' then
             if i + 1 > #args then
@@ -202,16 +198,8 @@ function execList(user_peer_id, is_admin, is_auth, args)
         return matrix.distance(peer_matrix, vehicle_matrix)
     end
 
-    local function getPeerID(steam_id)
-        if steam_id == 'SCRIPT' then
-            return -1
-        end
-        local peer = reindexTable(getPlayers(), 'steam_id')[steam_id]
-        return peer ~= nil and peer['id'] or nil
-    end
-
-    local function getPeerSortValue(steam_id)
-        local peer_id = getPeerID(steam_id)
+    local function getPeerSortValue(owner)
+        local peer_id = getOwnerPeerID(owner)
         if peer_id == nil then
             return -1
         elseif peer_id == -1 then
@@ -223,9 +211,9 @@ function execList(user_peer_id, is_admin, is_auth, args)
     local function filterVehicleList(list)
         local new = {}
         for _, info in ipairs(list) do
-            local steam_id_matched = steam_id == nil or info['steam_id'] == steam_id
+            local owner_matched = owner == nil or getOwnerEqual(info['owner'], owner)
             local vehicle_name_matched = string.find(info['vehicle_display_name'], vehicle_name, 1, true) ~= fail
-            if steam_id_matched and vehicle_name_matched then
+            if owner_matched and vehicle_name_matched then
                 table.insert(new, info)
             end
         end
@@ -248,11 +236,11 @@ function execList(user_peer_id, is_admin, is_auth, args)
             value_1 = getVehicleDist(info_1)
             value_2 = getVehicleDist(info_2)
         elseif sort == 'peer' then
-            value_1 = getPeerSortValue(info_1['steam_id'])
-            value_2 = getPeerSortValue(info_2['steam_id'])
+            value_1 = getPeerSortValue(info_1['owner'])
+            value_2 = getPeerSortValue(info_2['owner'])
         elseif sort == '!peer' then
-            value_1 = getPeerSortValue(info_2['steam_id'])
-            value_2 = getPeerSortValue(info_1['steam_id'])
+            value_1 = getPeerSortValue(info_2['owner'])
+            value_2 = getPeerSortValue(info_1['owner'])
         elseif sort == 'name' then
             value_1 = info_1['vehicle_name']
             value_2 = info_2['vehicle_name']
@@ -287,7 +275,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         end
 
         local peer_display_name = info['peer_display_name']
-        local peer_id = getPeerID(info['steam_id'])
+        local peer_id = getOwnerPeerID(info['owner'])
         if peer_id ~= nil and peer_id >= 0 then
             peer_display_name = string.format('%s#%d', info['peer_display_name'], peer_id)
         end
@@ -651,23 +639,16 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local info = {
         ['spawn_time'] = g_savedata['time'],
         ['vehicle_id'] = vehicle_id,
+        ['owner'] = getOwner(peer_id),
         ['ui_id'] = server.getMapID(),
         ['mark'] = false
     }
-
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
-
     local peer_name, is_success = server.getPlayerName(peer_id)
     info['peer_name'] = is_success and peer_name or nil
     info['peer_display_name'] = is_success and peer_name or '{script}'
-
-    info['steam_id'] = 'SCRIPT'
-    if peer_id >= 0 then
-        info['steam_id'] = reindexTable(getPlayers(), 'id')[peer_id]['steam_id']
-    end
-
     table.insert(g_savedata['list'], info)
 end
 
@@ -677,7 +658,7 @@ function onTick(game_ticks)
     end
 
     g_savedata['time'] = g_savedata['time'] + game_ticks
-    local peer_list = getPlayers()
+    local peer_list = server.getPlayers()
 
     for _, peer in pairs(peer_list) do
         if g_mark[peer['id']] == nil then
@@ -755,10 +736,10 @@ function initSavedata()
     if g_savedata['version'] == 16 then
         g_savedata['version'] = 17
         for _, info in ipairs(g_savedata['list']) do
-            info['steam_id'] = 'SCRIPT'
-            if info['peer_id'] >= 0 then
-                info['steam_id'] = '90071992547409920'
-            end
+            info['owner'] = {
+                ['kind'] = info['peer_id'] >= 0 and 'HOST' or 'SCRIPT',
+                ['steam_id'] = nil,
+            }
             info['peer_id'] = nil
         end
     end
@@ -930,6 +911,49 @@ function buildUIManager()
     return uim
 end
 
+function getOwner(peer_id)
+    if peer_id < 0 then
+        return {['kind'] = 'SCRIPT', ['steam_id'] = nil}
+    elseif peer_id == 0 then
+        return {['kind'] = 'HOST', ['steam_id'] = nil}
+    end
+
+    for _, peer in pairs(server.getPlayers()) do
+        if peer['id'] == peer_id then
+            return {
+                ['kind'] = 'GUEST',
+                ['steam_id'] = string.format('%d', peer['steam_id']),
+            }
+        end
+    end
+    return nil
+end
+
+function getOwnerEqual(owner_1, owner_2)
+    if owner_1['kind'] ~= owner_2['kind'] then
+        return false
+    elseif owner_1['kind'] ~= 'GUEST' then
+        return true
+    end
+    return owner_1['steam_id'] == owner_2['steam_id']
+end
+
+function getOwnerPeerID(owner)
+    if owner['kind'] == 'SCRIPT' then
+        return -1
+    elseif owner['kind'] == 'HOST' then
+        return 0
+    end
+
+    for _, peer in pairs(server.getPlayers()) do
+        local steam_id = string.format('%d', peer['steam_id'])
+        if steam_id == owner['steam_id'] then
+            return peer['id']
+        end
+    end
+    return nil
+end
+
 function getAnnounceName()
     local addon_index = server.getAddonIndex()
     local addon_data = server.getAddonData(addon_index)
@@ -947,14 +971,6 @@ function getPlayerDisplayName(peer_id)
         return '{someone}'
     end
     return peer_name
-end
-
-function getPlayers()
-    local peer_list = server.getPlayers()
-    for _, peer in pairs(peer_list) do
-        peer['steam_id'] = tostring(peer['steam_id'])
-    end
-    return peer_list
 end
 
 function getPeerIDList(peer_id)
