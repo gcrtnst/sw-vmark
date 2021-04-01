@@ -274,19 +274,13 @@ function execList(user_peer_id, is_admin, is_auth, args)
             dist = '???km'
         end
 
-        local peer_display_name = info['peer_display_name']
-        local peer_id = getOwnerPeerID(info['owner'])
-        if peer_id ~= nil and peer_id >= 0 then
-            peer_display_name = string.format('%s#%d', info['peer_display_name'], peer_id)
-        end
-
         return string.format(
             '%s %3d %s %s %s "%s"',
             mark,
             info['vehicle_id'],
             formatTicks(g_savedata['time'] - info['spawn_time']),
             dist,
-            peer_display_name,
+            getOwnerDisplayNameAndID(info['owner']),
             info['vehicle_display_name']
         )
     end
@@ -646,9 +640,6 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
-    local peer_name, is_success = server.getPlayerName(peer_id)
-    info['peer_name'] = is_success and peer_name or nil
-    info['peer_display_name'] = is_success and peer_name or '{script}'
     table.insert(g_savedata['list'], info)
 end
 
@@ -741,6 +732,8 @@ function initSavedata()
                 ['steam_id'] = nil,
             }
             info['peer_id'] = nil
+            info['peer_name'] = nil
+            info['peer_display_name'] = nil
         end
     end
 
@@ -923,6 +916,7 @@ function getOwner(peer_id)
             return {
                 ['kind'] = 'GUEST',
                 ['steam_id'] = string.format('%d', peer['steam_id']),
+                ['name'] = peer['name'],
             }
         end
     end
@@ -952,6 +946,37 @@ function getOwnerPeerID(owner)
         end
     end
     return nil
+end
+
+function getOwnerDisplayName(owner)
+    local peer_id = getOwnerPeerID(owner)
+    if peer_id ~= nil and peer_id >= 0 then
+        local peer_name, is_success = server.getPlayerName(peer_id)
+        if is_success then
+            return peer_name
+        end
+    end
+
+    if owner['name'] ~= nil then
+        return owner['name']
+    end
+
+    if owner['kind'] == 'SCRIPT' then
+        return '{script}'
+    elseif owner['kind'] == 'HOST' then
+        return '{host}'
+    end
+    return '{guest}'
+end
+
+function getOwnerDisplayNameAndID(owner)
+    local peer_display_name = getOwnerDisplayName(owner)
+    local peer_id = getOwnerPeerID(owner)
+
+    if peer_id == nil or peer_id < 0 then
+        return peer_display_name
+    end
+    return string.format('%s#%d', peer_display_name, peer_id)
 end
 
 function getAnnounceName()
