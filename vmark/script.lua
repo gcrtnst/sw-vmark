@@ -344,7 +344,8 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             return
         end
     else
-        if #g_savedata['list'] <= 0 then
+        info = getLastSpawnedVehicleInfo()
+        if info == nil then
             server.announce(
                 getAnnounceName(),
                 'error: no markable vehicles exist',
@@ -352,7 +353,6 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        info = g_savedata['list'][#g_savedata['list']]
     end
     info['mark'] = true
 
@@ -501,7 +501,8 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
             return
         end
     else
-        if #g_savedata['list'] <= 0 then
+        info = getLastSpawnedVehicleInfo()
+        if info == nil then
             server.announce(
                 getAnnounceName(),
                 'error: no markable vehicles exist',
@@ -509,7 +510,6 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        info = g_savedata['list'][#g_savedata['list']]
     end
     g_mark[user_peer_id][info['vehicle_id']] = true
 
@@ -764,6 +764,16 @@ function getVehicleInfo(vehicle_id)
             return info
         end
     end
+end
+
+function getLastSpawnedVehicleInfo()
+    local function compareVehicleID(info_1, info_2)
+        return info_1['vehicle_id'] < info_2['vehicle_id']
+    end
+
+    local list = copyTable(g_savedata['list'])
+    table.sort(list, compareVehicleID)
+    return list[#list]
 end
 
 function buildUIManager()
