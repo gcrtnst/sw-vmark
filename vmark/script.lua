@@ -733,10 +733,7 @@ function initSavedata()
     if g_savedata['version'] == 16 then
         g_savedata['version'] = 17
         for _, info in ipairs(g_savedata['list']) do
-            info['owner'] = {
-                ['kind'] = info['peer_id'] >= 0 and 'HOST' or 'SCRIPT',
-                ['steam_id'] = nil,
-            }
+            info['owner'] = getOwner(info['peer_id'] >= 0 and 0 or -1)
             info['peer_id'] = nil
             info['peer_name'] = nil
             info['peer_display_name'] = nil
