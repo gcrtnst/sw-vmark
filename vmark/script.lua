@@ -210,7 +210,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
     local function filterVehicleList(list)
         local new = {}
-        for _, info in ipairs(list) do
+        for _, info in pairs(list) do
             local owner_matched = owner == nil or getOwnerEqual(info['owner'], owner)
             local vehicle_name_matched = string.find(info['vehicle_display_name'], vehicle_name, 1, true) ~= fail
             if owner_matched and vehicle_name_matched then
@@ -400,7 +400,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
 
     if vehicle_id == -1 then
         local bak = {}
-        for _, info in ipairs(g_savedata['list']) do
+        for _, info in pairs(g_savedata['list']) do
             if info['mark'] then
                 table.insert(bak, info['vehicle_id'])
             end
@@ -409,7 +409,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             g_savedata['bak'] = bak
         end
 
-        for _, info in ipairs(g_savedata['list']) do
+        for _, info in pairs(g_savedata['list']) do
             info['mark'] = false
         end
         server.announce(
@@ -458,7 +458,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         )
         return
     end
-    for _, vehicle_id in ipairs(g_savedata['bak']) do
+    for _, vehicle_id in pairs(g_savedata['bak']) do
         local info = getVehicleInfo(vehicle_id)
         if info ~= nil then
             info['mark'] = true
@@ -695,7 +695,7 @@ function onTick(game_ticks)
     end
 
     local list = {}
-    for _, info in ipairs(g_savedata['list']) do
+    for _, info in pairs(g_savedata['list']) do
         local vehicle_exists = getVehicleExists(info['vehicle_id'])
         if vehicle_exists then
             table.insert(list, info)
@@ -716,7 +716,7 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
     g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 
     local owner = getOwner(peer_id)
-    for _, info in ipairs(g_savedata['list']) do
+    for _, info in pairs(g_savedata['list']) do
         if getOwnerEqual(info['owner'], owner) then
             info['owner'] = owner
         end
@@ -732,7 +732,7 @@ end
 function initSavedata()
     if g_savedata['version'] == 16 then
         g_savedata['version'] = 17
-        for _, info in ipairs(g_savedata['list']) do
+        for _, info in pairs(g_savedata['list']) do
             info['owner'] = getOwner(info['peer_id'] >= 0 and 0 or -1)
             info['peer_id'] = nil
             info['peer_name'] = nil
@@ -752,14 +752,14 @@ end
 
 function initUIManager()
     g_uim = buildUIManager()
-    for _, info in ipairs(g_savedata['list']) do
+    for _, info in pairs(g_savedata['list']) do
         server.removeMapObject(-1, info['ui_id'])
         server.removePopup(-1, info['ui_id'])
     end
 end
 
 function getVehicleInfo(vehicle_id)
-    for _, info in ipairs(g_savedata['list']) do
+    for _, info in pairs(g_savedata['list']) do
         if info['vehicle_id'] == vehicle_id then
             return info
         end
