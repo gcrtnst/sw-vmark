@@ -952,6 +952,13 @@ function getOwnerPeerID(owner)
 end
 
 function getOwnerDisplayName(owner)
+    if owner['kind'] == 'HOST' then
+        local peer_name, is_success = server.getPlayerName(0)
+        if is_success then
+            return peer_name
+        end
+    end
+
     if owner['name'] ~= nil then
         return owner['name']
     end
