@@ -10,7 +10,7 @@
 [olist]
     [*][b]?vmark list[/b]で車両一覧を表示させて、マーカーを設定したい車両を選びます。
     [*][b]?vmark set VEHICLE_ID[/b]でマーカーを設定します。[b]VEHICLE_ID[/b] は車両一覧の一番左の数字です。
-    [*][b]?vmark clear -1[/b]でマーカーを消します。
+    [*][b]?vmark clear[/b]でマーカーを消します。
 [/olist]
 
 [h1]コマンド[/h1]

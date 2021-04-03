@@ -11,7 +11,7 @@ Vehicle Marker is a custom command that displays the location of a vehicle in vi
     [*]Use [b]?vmark list[/b] to display the list of vehicles.
     [*]Select the vehicle you want to set the marker from the vehicle list.
     [*]Use [b]?vmark set VEHICLE_ID[/b] to set the marker. [b]VEHICLE_ID[/b] is the leftmost number in the vehicle list.
-    [*]Use [b]?vmark clear -1[/b] to remove the marker.
+    [*]Use [b]?vmark clear[/b] to remove the marker.
 [/olist]
 
 [h1]Commands[/h1]
