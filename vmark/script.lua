@@ -71,10 +71,10 @@ function execHelp(user_peer_id, is_admin, is_auth, args)
         (
             g_cmd .. ' list [OPTIONS]\n' ..
             g_cmd .. ' set [VEHICLE_ID]\n' ..
-            g_cmd .. ' clear VEHICLE_ID\n' ..
+            g_cmd .. ' clear [VEHICLE_ID]\n' ..
             g_cmd .. ' restore\n' ..
             g_cmd .. ' setlocal [VEHICLE_ID]\n' ..
-            g_cmd .. ' clearlocal VEHICLE_ID\n' ..
+            g_cmd .. ' clearlocal [VEHICLE_ID]\n' ..
             g_cmd .. ' hide\n' ..
             g_cmd .. ' show\n' ..
             g_cmd .. ' help [list]'
@@ -371,14 +371,6 @@ function execSet(user_peer_id, is_admin, is_auth, args)
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
-    if #args < 2 then
-        server.announce(
-            getAnnounceName(),
-            'error: no vehicle_id specified',
-            user_peer_id
-        )
-        return
-    end
     if #args > 2 then
         server.announce(
             getAnnounceName(),
@@ -388,17 +380,20 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         return
     end
 
-    local vehicle_id = tonumber(args[2])
-    if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
-        server.announce(
-            getAnnounceName(),
-            string.format('error: got invalid vehicle_id "%s"', args[2]),
-            user_peer_id
-        )
-        return
+    local vehicle_id = -1
+    if #args >= 2 then
+        vehicle_id = tonumber(args[2])
+        if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
+            server.announce(
+                getAnnounceName(),
+                string.format('error: got invalid vehicle_id "%s"', args[2]),
+                user_peer_id
+            )
+            return
+        end
     end
 
-    if vehicle_id == -1 then
+    if vehicle_id < 0 then
         local bak = {}
         for _, info in pairs(g_savedata['list']) do
             if info['mark'] then
@@ -529,14 +524,6 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
 end
 
 function execClearLocal(user_peer_id, is_admin, is_auth, args)
-    if #args < 2 then
-        server.announce(
-            getAnnounceName(),
-            'error: no vehicle_id specified',
-            user_peer_id
-        )
-        return
-    end
     if #args > 2 then
         server.announce(
             getAnnounceName(),
@@ -546,17 +533,20 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
         return
     end
 
-    local vehicle_id = tonumber(args[2])
-    if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
-        server.announce(
-            getAnnounceName(),
-            string.format('error: got invalid vehicle_id "%s"', args[2]),
-            user_peer_id
-        )
-        return
+    local vehicle_id = -1
+    if #args >= 2 then
+        vehicle_id = tonumber(args[2])
+        if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
+            server.announce(
+                getAnnounceName(),
+                string.format('error: got invalid vehicle_id "%s"', args[2]),
+                user_peer_id
+            )
+            return
+        end
     end
 
-    if vehicle_id == -1 then
+    if vehicle_id < 0 then
         g_mark[user_peer_id] = {}
         server.announce(
             getAnnounceName(),
