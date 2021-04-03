@@ -758,6 +758,14 @@ function initUIManager()
     end
 end
 
+function getVehicleInfo(vehicle_id)
+    for _, info in ipairs(g_savedata['list']) do
+        if info['vehicle_id'] == vehicle_id then
+            return info
+        end
+    end
+end
+
 function buildUIManager()
     local uim = {
         ['_map_object_1'] = {},
@@ -1015,14 +1023,6 @@ end
 function getVehicleExists(vehicle_id)
     local _, is_success = server.getVehicleFireCount(vehicle_id)
     return is_success
-end
-
-function getVehicleInfo(vehicle_id)
-    for _, info in ipairs(g_savedata['list']) do
-        if info['vehicle_id'] == vehicle_id then
-            return info
-        end
-    end
 end
 
 function formatTicks(ticks)
