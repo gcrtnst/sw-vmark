@@ -713,8 +713,14 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
     if not g_init then
         init()
     end
-
     g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
+
+    local owner = getOwner(peer_id)
+    for _, info in ipairs(g_savedata['list']) do
+        if getOwnerEqual(info['owner'], owner) then
+            info['owner'] = owner
+        end
+    end
 end
 
 function init()
@@ -949,14 +955,6 @@ function getOwnerPeerID(owner)
 end
 
 function getOwnerDisplayName(owner)
-    local peer_id = getOwnerPeerID(owner)
-    if peer_id ~= nil and peer_id >= 0 then
-        local peer_name, is_success = server.getPlayerName(peer_id)
-        if is_success then
-            return peer_name
-        end
-    end
-
     if owner['name'] ~= nil then
         return owner['name']
     end
