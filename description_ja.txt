@@ -25,9 +25,9 @@
 [b]VEHICLE_ID[/b] を指定しなかった場合、最も最近スポーンした車両にマーカーを設定します。
 グローバルマーカーはプレイヤー全員に表示されます。
 
-[b]?vmark clear VEHICLE_ID[/b]
+[b]?vmark clear [VEHICLE_ID][/b]
 グローバルマーカーを消します。
-[b]VEHICLE_ID[/b] に -1 を指定すると、全てのグローバルマーカーを消します。
+[b]VEHICLE_ID[/b] を指定しなかった場合、全てのグローバルマーカーを消します。
 
 [b]?vmark restore[/b]
 間違えて一括消去してしまったグローバルマーカーを元に戻します。
@@ -38,9 +38,9 @@
 [b]VEHICLE_ID[/b] を指定しなかった場合、最も最近スポーンした車両にマーカーを設定します。
 ローカルマーカーは設定した本人にしか見えません。
 
-[b]?vmark clearlocal VEHICLE_ID[/b]
+[b]?vmark clearlocal [VEHICLE_ID][/b]
 ローカルマーカーを消します。
-[b]VEHICLE_ID[/b] に -1 を指定すると、全てのローカルマーカーを消します。
+[b]VEHICLE_ID[/b] を指定しなかった場合、全てのローカルマーカーを消します。
 
 [b]?vmark hide[/b]
 一時的にすべてのマーカーを隠します。

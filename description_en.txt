@@ -26,9 +26,9 @@ Set the global marker.
 If [b]VEHICLE_ID[/b] is not specified, it sets the marker to the most recently spawned vehicle.
 The global marker will be shown to all players.
 
-[b]?vmark clear VEHICLE_ID[/b]
+[b]?vmark clear [VEHICLE_ID][/b]
 Erase the global marker.
-If -1 is specified for [b]VEHICLE_ID[/b], it will erase all global markers.
+If [b]VEHICLE_ID[/b] is not specified, it will erase all global markers.
 
 [b]?vmark restore[/b]
 Restores global markers that were accidentally erased by mistake.
@@ -39,9 +39,9 @@ Set the local marker.
 If [b]VEHICLE_ID[/b] is not specified, it will set the marker to the most recently spawned vehicle.
 The local marker will only be visible to the person who set it.
 
-[b]?vmark clearlocal VEHICLE_ID[/b]
+[b]?vmark clearlocal [VEHICLE_ID][/b]
 Erase the local marker.
-If -1 is specified for [b]VEHICLE_ID[/b], it will erase all local markers.
+If [b]VEHICLE_ID[/b] is not specified, it will erase all local markers.
 
 [b]?vmark hide[/b]
 Temporarily hides all markers.
