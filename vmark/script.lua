@@ -285,7 +285,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         )
     end
 
-    local list = copyTable(g_savedata['list'])
+    local list = getVehicleList()
     list = filterVehicleList(list)
     table.sort(list, compareVehicleInfo)
 
@@ -334,7 +334,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        info = getVehicleInfo(vehicle_id)
+        info = g_savedata['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
                 getAnnounceName(),
@@ -395,7 +395,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
 
     if vehicle_id < 0 then
         local bak = {}
-        for _, info in pairs(g_savedata['list']) do
+        for _, info in pairs(g_savedata['vehicle_db']) do
             if info['mark'] then
                 table.insert(bak, info['vehicle_id'])
             end
@@ -404,7 +404,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             g_savedata['bak'] = bak
         end
 
-        for _, info in pairs(g_savedata['list']) do
+        for _, info in pairs(g_savedata['vehicle_db']) do
             info['mark'] = false
         end
         server.announce(
@@ -418,7 +418,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             )
         )
     else
-        local info = getVehicleInfo(vehicle_id)
+        local info = g_savedata['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
                 getAnnounceName(),
@@ -454,7 +454,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         return
     end
     for _, vehicle_id in pairs(g_savedata['bak']) do
-        local info = getVehicleInfo(vehicle_id)
+        local info = g_savedata['vehicle_db'][vehicle_id]
         if info ~= nil then
             info['mark'] = true
         end
@@ -486,7 +486,7 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        info = getVehicleInfo(vehicle_id)
+        info = g_savedata['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
                 getAnnounceName(),
@@ -554,7 +554,7 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
             user_peer_id
         )
     else
-        local info = getVehicleInfo(vehicle_id)
+        local info = g_savedata['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
                 getAnnounceName(),
@@ -630,7 +630,7 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
-    table.insert(g_savedata['list'], info)
+    g_savedata['vehicle_db'][vehicle_id] = info
 end
 
 function onTick(game_ticks)
@@ -684,18 +684,18 @@ function onTick(game_ticks)
         end
     end
 
-    local list = {}
-    for _, info in pairs(g_savedata['list']) do
+    local vehicle_db = {}
+    for _, info in pairs(g_savedata['vehicle_db']) do
         local vehicle_exists = getVehicleExists(info['vehicle_id'])
         if vehicle_exists then
-            table.insert(list, info)
+            vehicle_db[info['vehicle_id']] = info
             onVehicleExists(info)
         else
             onVehicleDespawn(info)
         end
     end
 
-    g_savedata['list'] = list
+    g_savedata['vehicle_db'] = vehicle_db
     g_uim.flush()
 end
 
@@ -706,7 +706,7 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
     g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 
     local owner = getOwner(peer_id)
-    for _, info in pairs(g_savedata['list']) do
+    for _, info in pairs(g_savedata['vehicle_db']) do
         if getOwnerEqual(info['owner'], owner) then
             info['owner'] = owner
         end
@@ -730,29 +730,30 @@ function initSavedata()
         end
     end
 
-    if g_savedata['version'] ~= 17 then
+    if g_savedata['version'] == 17 then
+        g_savedata['version'] = 18
+        g_savedata['vehicle_db'] = {}
+        for _, info in pairs(g_savedata['list']) do
+            g_savedata['vehicle_db'][info['vehicle_id']] = info
+        end
+        g_savedata['list'] = nil
+    end
+
+    if g_savedata['version'] ~= 18 then
         g_savedata = {
-            ['version'] = 17,
-            ['time'] = 0,
-            ['list'] = {},
+            ['version'] = 18,
+            ['vehicle_db'] = {},
             ['bak'] = {},
+            ['time'] = 0,
         }
     end
 end
 
 function initUIManager()
     g_uim = buildUIManager()
-    for _, info in pairs(g_savedata['list']) do
+    for _, info in pairs(g_savedata['vehicle_db']) do
         server.removeMapObject(-1, info['ui_id'])
         server.removePopup(-1, info['ui_id'])
-    end
-end
-
-function getVehicleInfo(vehicle_id)
-    for _, info in pairs(g_savedata['list']) do
-        if info['vehicle_id'] == vehicle_id then
-            return info
-        end
     end
 end
 
@@ -761,9 +762,17 @@ function getLastSpawnedVehicleInfo()
         return info_1['vehicle_id'] < info_2['vehicle_id']
     end
 
-    local list = copyTable(g_savedata['list'])
+    local list = getVehicleList()
     table.sort(list, compareVehicleID)
     return list[#list]
+end
+
+function getVehicleList()
+    local list = {}
+    for _, info in pairs(g_savedata['vehicle_db']) do
+        table.insert(list, info)
+    end
+    return list
 end
 
 function buildUIManager()
@@ -1041,14 +1050,6 @@ function formatDistance(dist)
         return string.format('%dm', math.floor(dist))
     end
     return string.format('%.1fkm', dist/1000)
-end
-
-function copyTable(tbl)
-    local new = {}
-    for key, value in pairs(tbl) do
-        new[key] = value
-    end
-    return new
 end
 
 function reverseTable(tbl)
