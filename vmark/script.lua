@@ -758,13 +758,13 @@ function initUIManager()
 end
 
 function getLastSpawnedVehicleInfo()
-    local function compareVehicleID(info_1, info_2)
-        return info_1['vehicle_id'] < info_2['vehicle_id']
+    local vehicle_id = -1
+    for _, info in pairs(g_savedata['vehicle_db']) do
+        if info['vehicle_id'] > vehicle_id then
+            vehicle_id = info['vehicle_id']
+        end
     end
-
-    local list = getVehicleList()
-    table.sort(list, compareVehicleID)
-    return list[#list]
+    return g_savedata['vehicle_db'][vehicle_id]
 end
 
 function getVehicleList()
