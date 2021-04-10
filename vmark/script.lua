@@ -439,12 +439,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         )
         return
     end
-    for vehicle_id, _ in pairs(g_savedata['bak']) do
-        local info = g_savedata['vehicle_db'][vehicle_id]
-        if info ~= nil then
-            setMarker(-1, info['vehicle_id'])
-        end
-    end
+    setMarkerTable(-1, g_savedata['bak'])
     server.announce(
         getAnnounceName(),
         string.format('%s restored global markers', getPlayerDisplayName(user_peer_id))
@@ -792,6 +787,12 @@ function getMarkerTable(...)
         end
     end
     return mark
+end
+
+function setMarkerTable(peer_id, mark)
+    for vehicle_id, _ in pairs(mark) do
+        setMarker(peer_id, vehicle_id)
+    end
 end
 
 function getMarker(peer_id, vehicle_id)
