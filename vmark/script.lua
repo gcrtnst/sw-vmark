@@ -392,9 +392,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             g_savedata['bak'] = bak
         end
 
-        for _, info in pairs(g_savedata['vehicle_db']) do
-            removeMarker(-1, info['vehicle_id'])
-        end
+        removeMarker(-1, -1)
         server.announce(
             getAnnounceName(),
             string.format(
