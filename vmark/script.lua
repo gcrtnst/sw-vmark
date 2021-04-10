@@ -278,6 +278,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         )
     end
 
+    cleanVehicleDB()
     cleanMarkerDB()
     local list = getVehicleList()
     list = filterVehicleList(list)
@@ -317,6 +318,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
         return
     end
 
+    cleanVehicleDB()
     local info = nil
     if #args == 2 then
         local vehicle_id = tonumber(args[2])
@@ -406,6 +408,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             )
         )
     else
+        cleanVehicleDB()
         local info = g_savedata['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
@@ -458,6 +461,7 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
         return
     end
 
+    cleanVehicleDB()
     local info = nil
     if #args == 2 then
         local vehicle_id = tonumber(args[2])
@@ -537,6 +541,7 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
             user_peer_id
         )
     else
+        cleanVehicleDB()
         local info = g_savedata['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
@@ -620,8 +625,6 @@ function onTick(game_ticks)
         init()
     end
     g_savedata['time'] = g_savedata['time'] + game_ticks
-
-    cleanVehicleDB()
 
     local peer_id_tbl = getPeerIDTable()
     for peer_id, _ in pairs(g_hide) do
