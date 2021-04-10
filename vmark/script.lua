@@ -623,6 +623,7 @@ function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
     local peer_list = server.getPlayers()
 
+    cleanVehicleDB()
     cleanMarkerDB()
     for peer_id, _ in pairs(g_hide) do
         if not getPlayerExists(peer_id) then
@@ -651,16 +652,9 @@ function onTick(game_ticks)
         end
     end
 
-    local vehicle_db = {}
     for _, info in pairs(g_savedata['vehicle_db']) do
-        local vehicle_exists = getVehicleExists(info['vehicle_id'])
-        if vehicle_exists then
-            vehicle_db[info['vehicle_id']] = info
-            onVehicleExists(info)
-        end
+        onVehicleExists(info)
     end
-
-    g_savedata['vehicle_db'] = vehicle_db
     g_uim.flush()
 end
 
@@ -735,6 +729,14 @@ function initUIManager()
     for _, info in pairs(g_savedata['vehicle_db']) do
         server.removeMapObject(-1, info['ui_id'])
         server.removePopup(-1, info['ui_id'])
+    end
+end
+
+function cleanVehicleDB()
+    for vehicle_id, _ in pairs(g_savedata['vehicle_db']) do
+        if not getVehicleExists(vehicle_id) then
+            g_savedata['vehicle_db'][vehicle_id] = nil
+        end
     end
 end
 
