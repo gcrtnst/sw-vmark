@@ -779,19 +779,19 @@ function cleanMarkerDB()
 end
 
 function getMarkerTable(...)
-    local mark_tbl = {}
+    local mark = {}
     for _, peer_id in pairs({...}) do
         if peer_id == -1 then
             for vehicle_id, _ in pairs(g_savedata['mark']) do
-                mark_tbl[vehicle_id] = true
+                mark[vehicle_id] = true
             end
         elseif g_mark[peer_id] ~= nil then
                 for vehicle_id, _ in pairs(g_mark[peer_id]) do
-                    mark_tbl[vehicle_id] = true
+                    mark[vehicle_id] = true
                 end
         end
     end
-    return mark_tbl
+    return mark
 end
 
 function getMarker(peer_id, vehicle_id)
