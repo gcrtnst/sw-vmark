@@ -728,32 +728,6 @@ function initUIManager()
     end
 end
 
-function cleanVehicleDB()
-    for vehicle_id, _ in pairs(g_savedata['vehicle_db']) do
-        if not getVehicleExists(vehicle_id) then
-            g_savedata['vehicle_db'][vehicle_id] = nil
-        end
-    end
-end
-
-function getLastSpawnedVehicleInfo()
-    local vehicle_id = -1
-    for _, info in pairs(g_savedata['vehicle_db']) do
-        if info['vehicle_id'] > vehicle_id then
-            vehicle_id = info['vehicle_id']
-        end
-    end
-    return g_savedata['vehicle_db'][vehicle_id]
-end
-
-function getVehicleList()
-    local list = {}
-    for _, info in pairs(g_savedata['vehicle_db']) do
-        table.insert(list, info)
-    end
-    return list
-end
-
 function cleanMarkerDB()
     for vehicle_id, _ in pairs(g_savedata['mark']) do
         if not getVehicleExists(vehicle_id) then
@@ -832,6 +806,32 @@ function removeMarker(peer_id, vehicle_id)
         return
     end
     g_mark[peer_id][vehicle_id] = nil
+end
+
+function cleanVehicleDB()
+    for vehicle_id, _ in pairs(g_savedata['vehicle_db']) do
+        if not getVehicleExists(vehicle_id) then
+            g_savedata['vehicle_db'][vehicle_id] = nil
+        end
+    end
+end
+
+function getLastSpawnedVehicleInfo()
+    local vehicle_id = -1
+    for _, info in pairs(g_savedata['vehicle_db']) do
+        if info['vehicle_id'] > vehicle_id then
+            vehicle_id = info['vehicle_id']
+        end
+    end
+    return g_savedata['vehicle_db'][vehicle_id]
+end
+
+function getVehicleList()
+    local list = {}
+    for _, info in pairs(g_savedata['vehicle_db']) do
+        table.insert(list, info)
+    end
+    return list
 end
 
 function buildUIManager()
