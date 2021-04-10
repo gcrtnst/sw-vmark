@@ -278,6 +278,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         )
     end
 
+    cleanMarkerDB()
     local list = getVehicleList()
     list = filterVehicleList(list)
     table.sort(list, compareVehicleInfo)
@@ -387,6 +388,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     end
 
     if vehicle_id < 0 then
+        cleanMarkerDB()
         local bak = getMarkerTable(-1)
         if next(bak) ~= nil then
             g_savedata['bak'] = bak
