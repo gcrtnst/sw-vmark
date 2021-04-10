@@ -847,7 +847,7 @@ function buildUIManager()
     }
 
     function uim.setMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label)
-        for _, peer_id in pairs(getPeerIDList(peer_id)) do
+        for peer_id, _ in pairs(getPeerIDTable(peer_id)) do
             local key = string.format('%d,%d', peer_id, ui_id)
             uim['_map_object_2'][key] = {
                 ['peer_id'] = peer_id,
@@ -868,7 +868,7 @@ function buildUIManager()
     end
 
     function uim.setPopup(peer_id, ui_id, name, is_show, text, x, y, z, render_distance)
-        for _, peer_id in pairs(getPeerIDList(peer_id)) do
+        for peer_id, _ in pairs(getPeerIDTable(peer_id)) do
             local key = string.format('%d,%d', peer_id, ui_id)
             uim['_popup_2'][key] = {
                 ['peer_id'] = peer_id,
@@ -1080,16 +1080,16 @@ function getPlayerDisplayName(peer_id)
     return peer_name
 end
 
-function getPeerIDList(peer_id)
-    local peer_id_list = {}
-    if peer_id < 0 then
-        for _, peer in pairs(server.getPlayers()) do
-            table.insert(peer_id_list, peer['id'])
-        end
-    else
-        table.insert(peer_id_list, peer_id)
+function getPeerIDTable(peer_id)
+    if peer_id ~= nil and peer_id >= 0 then
+        return {[peer_id] = true}
     end
-    return peer_id_list
+
+    local peer_id_tbl = {}
+    for _, peer in pairs(server.getPlayers()) do
+        peer_id_tbl[peer['id']] = true
+    end
+    return peer_id_tbl
 end
 
 function getVehicleExists(vehicle_id)
