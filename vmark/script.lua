@@ -730,7 +730,7 @@ end
 
 function cleanMarkerDB()
     for vehicle_id, _ in pairs(g_savedata['mark']) do
-        if not getVehicleExists(vehicle_id) then
+        if not getVehicleExists(vehicle_id) or g_savedata['vehicle_db'][vehicle_id] == nil then
             g_savedata['mark'][vehicle_id] = nil
         end
     end
@@ -739,7 +739,7 @@ function cleanMarkerDB()
             g_mark[peer_id] = nil
         else
             for vehicle_id, _ in pairs(g_mark[peer_id]) do
-                if not getVehicleExists(vehicle_id) then
+                if not getVehicleExists(vehicle_id) or g_savedata['vehicle_db'][vehicle_id] == nil then
                     g_mark[peer_id][vehicle_id] = nil
                 end
             end
