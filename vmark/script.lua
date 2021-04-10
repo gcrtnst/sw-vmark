@@ -289,7 +289,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         end
     end
     for i = #list, 1, -1 do
-        if getMarker(-1, list[i]['vehicle_id']) == 'G' and getMarker(user_peer_id, list[i]['vehicle_id']) ~= 'L' then
+        if getMarker(user_peer_id, list[i]['vehicle_id']) == 'G' then
             table.insert(msg, formatMessage(list[i]))
         end
     end
@@ -297,7 +297,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         if #msg >= num then
             break
         end
-        if getMarker(-1, list[i]['vehicle_id']) ~= 'G' and getMarker(user_peer_id, list[i]['vehicle_id']) ~= 'L' then
+        if getMarker(user_peer_id, list[i]['vehicle_id']) == '-' then
             table.insert(msg, formatMessage(list[i]))
         end
     end
