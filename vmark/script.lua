@@ -260,13 +260,6 @@ function execList(user_peer_id, is_admin, is_auth, args)
     end
 
     local function formatMessage(info)
-        local mark = '-'
-        if getMarker(user_peer_id, info['vehicle_id']) == 'L' then
-            mark = 'L'
-        elseif getMarker(-1, info['vehicle_id']) == 'G' then
-            mark = 'G'
-        end
-
         local dist = getVehicleDist(info)
         if dist ~= nil then
             dist = string.format('%.1fkm', dist/1000)
@@ -276,7 +269,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
         return string.format(
             '%s %3d %s %s %s "%s"',
-            mark,
+            getMarker(user_peer_id, info['vehicle_id']),
             info['vehicle_id'],
             formatTicks(g_savedata['time'] - info['spawn_time']),
             dist,
