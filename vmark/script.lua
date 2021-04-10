@@ -387,13 +387,8 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     end
 
     if vehicle_id < 0 then
-        local bak = {}
-        for _, info in pairs(g_savedata['vehicle_db']) do
-            if getMarker(-1, info['vehicle_id']) == 'G' then
-                table.insert(bak, info['vehicle_id'])
-            end
-        end
-        if #bak > 0 then
+        local bak = getMarkerTable(-1)
+        if next(bak) ~= nil then
             g_savedata['bak'] = bak
         end
 
@@ -446,7 +441,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         )
         return
     end
-    for _, vehicle_id in pairs(g_savedata['bak']) do
+    for vehicle_id, _ in pairs(g_savedata['bak']) do
         local info = g_savedata['vehicle_db'][vehicle_id]
         if info ~= nil then
             setMarker(-1, info['vehicle_id'])
@@ -707,13 +702,23 @@ function initSavedata()
 
     if g_savedata['version'] == 17 then
         g_savedata['version'] = 18
-        g_savedata['vehicle_db'] = {}
+
+        local bak = {}
+        for _, vehicle_id in pairs(g_savedata['bak']) do
+            bak[vehicle_id] = true
+        end
+        g_savedata['bak'] = bak
+
         g_savedata['mark'] = {}
         for _, info in pairs(g_savedata['list']) do
             if info['mark'] then
                 g_savedata['mark'][info['vehicle_id']] = true
             end
             info['mark'] = nil
+        end
+
+        g_savedata['vehicle_db'] = {}
+        for _, info in pairs(g_savedata['list']) do
             g_savedata['vehicle_db'][info['vehicle_id']] = info
         end
         g_savedata['list'] = nil
