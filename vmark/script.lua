@@ -261,9 +261,9 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
     local function formatMessage(info)
         local mark = '-'
-        if g_mark[user_peer_id][info['vehicle_id']] then
+        if getMarker(user_peer_id, info['vehicle_id']) == 'L' then
             mark = 'L'
-        elseif info['mark'] then
+        elseif getMarker(-1, info['vehicle_id']) == 'G' then
             mark = 'G'
         end
 
@@ -291,12 +291,12 @@ function execList(user_peer_id, is_admin, is_auth, args)
 
     local msg = {}
     for i = #list, 1, -1 do
-        if g_mark[user_peer_id][list[i]['vehicle_id']] then
+        if getMarker(user_peer_id, list[i]['vehicle_id']) == 'L' then
             table.insert(msg, formatMessage(list[i]))
         end
     end
     for i = #list, 1, -1 do
-        if list[i]['mark'] and not g_mark[user_peer_id][list[i]['vehicle_id']] then
+        if getMarker(-1, list[i]['vehicle_id']) == 'G' and getMarker(user_peer_id, list[i]['vehicle_id']) ~= 'L' then
             table.insert(msg, formatMessage(list[i]))
         end
     end
@@ -304,7 +304,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         if #msg >= num then
             break
         end
-        if not list[i]['mark'] and not g_mark[user_peer_id][list[i]['vehicle_id']] then
+        if getMarker(-1, list[i]['vehicle_id']) ~= 'G' and getMarker(user_peer_id, list[i]['vehicle_id']) ~= 'L' then
             table.insert(msg, formatMessage(list[i]))
         end
     end
@@ -354,7 +354,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             return
         end
     end
-    info['mark'] = true
+    setMarker(-1, info['vehicle_id'])
 
     server.announce(
         getAnnounceName(),
@@ -396,7 +396,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     if vehicle_id < 0 then
         local bak = {}
         for _, info in pairs(g_savedata['vehicle_db']) do
-            if info['mark'] then
+            if getMarker(-1, info['vehicle_id']) == 'G' then
                 table.insert(bak, info['vehicle_id'])
             end
         end
@@ -405,7 +405,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         end
 
         for _, info in pairs(g_savedata['vehicle_db']) do
-            info['mark'] = false
+            removeMarker(-1, info['vehicle_id'])
         end
         server.announce(
             getAnnounceName(),
@@ -427,7 +427,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        info['mark'] = false
+        removeMarker(-1, info['vehicle_id'])
 
         server.announce(
             getAnnounceName(),
@@ -456,7 +456,7 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
     for _, vehicle_id in pairs(g_savedata['bak']) do
         local info = g_savedata['vehicle_db'][vehicle_id]
         if info ~= nil then
-            info['mark'] = true
+            setMarker(-1, info['vehicle_id'])
         end
     end
     server.announce(
@@ -506,7 +506,7 @@ function execSetLocal(user_peer_id, is_admin, is_auth, args)
             return
         end
     end
-    g_mark[user_peer_id][info['vehicle_id']] = true
+    setMarker(user_peer_id, info['vehicle_id'])
 
     server.announce(
         getAnnounceName(),
@@ -547,7 +547,7 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
     end
 
     if vehicle_id < 0 then
-        g_mark[user_peer_id] = {}
+        removeMarker(user_peer_id, -1)
         server.announce(
             getAnnounceName(),
             string.format('%s cleared all local markers', getPlayerDisplayName(user_peer_id)),
@@ -563,7 +563,7 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        g_mark[user_peer_id][info['vehicle_id']] = nil
+        removeMarker(user_peer_id, info['vehicle_id'])
 
         server.announce(
             getAnnounceName(),
@@ -625,7 +625,6 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
         ['vehicle_id'] = vehicle_id,
         ['owner'] = getOwner(peer_id),
         ['ui_id'] = server.getMapID(),
-        ['mark'] = false
     }
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
@@ -641,16 +640,7 @@ function onTick(game_ticks)
     g_savedata['time'] = g_savedata['time'] + game_ticks
     local peer_list = server.getPlayers()
 
-    for _, peer in pairs(peer_list) do
-        if g_mark[peer['id']] == nil then
-            g_mark[peer['id']] = {}
-        end
-    end
-    for peer_id, _ in pairs(g_mark) do
-        if not getPlayerExists(peer_id) then
-            g_mark[peer_id] = nil
-        end
-    end
+    cleanMarkerDB()
     for peer_id, _ in pairs(g_hide) do
         if not getPlayerExists(peer_id) then
             g_hide[peer_id] = nil
@@ -661,7 +651,7 @@ function onTick(game_ticks)
         local vehicle_matrix, _
         local vehicle_x, vehicle_y, vehicle_z
         for _, peer in pairs(peer_list) do
-            if (info['mark'] or g_mark[peer['id']][info['vehicle_id']]) and (not g_hide[peer['id']]) then
+            if (getMarker(-1, info['vehicle_id']) == 'G' or getMarker(peer['id'], info['vehicle_id']) == 'L') and (not g_hide[peer['id']]) then
                 if vehicle_matrix == nil then
                     vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
                     vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
@@ -678,20 +668,12 @@ function onTick(game_ticks)
         end
     end
 
-    local function onVehicleDespawn(info)
-        for peer_id, _ in pairs(g_mark) do
-            g_mark[peer_id][info['vehicle_id']] = nil
-        end
-    end
-
     local vehicle_db = {}
     for _, info in pairs(g_savedata['vehicle_db']) do
         local vehicle_exists = getVehicleExists(info['vehicle_id'])
         if vehicle_exists then
             vehicle_db[info['vehicle_id']] = info
             onVehicleExists(info)
-        else
-            onVehicleDespawn(info)
         end
     end
 
@@ -733,7 +715,12 @@ function initSavedata()
     if g_savedata['version'] == 17 then
         g_savedata['version'] = 18
         g_savedata['vehicle_db'] = {}
+        g_savedata['mark'] = {}
         for _, info in pairs(g_savedata['list']) do
+            if info['mark'] then
+                g_savedata['mark'][info['vehicle_id']] = true
+            end
+            info['mark'] = nil
             g_savedata['vehicle_db'][info['vehicle_id']] = info
         end
         g_savedata['list'] = nil
@@ -743,6 +730,7 @@ function initSavedata()
         g_savedata = {
             ['version'] = 18,
             ['vehicle_db'] = {},
+            ['mark'] = {},
             ['bak'] = {},
             ['time'] = 0,
         }
@@ -773,6 +761,80 @@ function getVehicleList()
         table.insert(list, info)
     end
     return list
+end
+
+function cleanMarkerDB()
+    for vehicle_id, _ in pairs(g_savedata['mark']) do
+        if not getVehicleExists(vehicle_id) then
+            g_savedata['mark'][vehicle_id] = nil
+        end
+    end
+    for peer_id, _ in pairs(g_mark) do
+        if (next(g_mark[peer_id]) == nil) or (not getPlayerExists(peer_id)) then
+            g_mark[peer_id] = nil
+        else
+            for vehicle_id, _ in pairs(g_mark[peer_id]) do
+                if not getVehicleExists(vehicle_id) then
+                    g_mark[peer_id][vehicle_id] = nil
+                end
+            end
+        end
+    end
+end
+
+function getMarkerTable(...)
+    local mark_tbl = {}
+    for _, peer_id in pairs({...}) do
+        if peer_id == -1 then
+            for vehicle_id, _ in pairs(g_savedata['mark']) do
+                mark_tbl[vehicle_id] = true
+            end
+        elseif g_mark[peer_id] ~= nil then
+                for vehicle_id, _ in pairs(g_mark[peer_id]) do
+                    mark_tbl[vehicle_id] = true
+                end
+        end
+    end
+    return mark_tbl
+end
+
+function getMarker(peer_id, vehicle_id)
+    if peer_id >= 0 and g_mark[peer_id] ~= nil and g_mark[peer_id][vehicle_id] then
+        return 'L'
+    elseif g_savedata['mark'][vehicle_id] then
+        return 'G'
+    end
+    return '-'
+end
+
+function setMarker(peer_id, vehicle_id)
+    if peer_id == -1 then
+        g_savedata['mark'][vehicle_id] = true
+        return
+    end
+    if g_mark[peer_id] == nil then
+        g_mark[peer_id] = {}
+    end
+    g_mark[peer_id][vehicle_id] = true
+end
+
+function removeMarker(peer_id, vehicle_id)
+    if peer_id == -1 then
+        if vehicle_id == -1 then
+            g_savedata['mark'] = {}
+            return
+        end
+        g_savedata['mark'][vehicle_id] = nil
+        return
+    end
+    if g_mark[peer_id] == nil then
+        return
+    end
+    if vehicle_id == -1 then
+        g_mark[peer_id] = nil
+        return
+    end
+    g_mark[peer_id][vehicle_id] = nil
 end
 
 function buildUIManager()
