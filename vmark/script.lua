@@ -619,41 +619,34 @@ function onTick(game_ticks)
     if not g_init then
         init()
     end
-
     g_savedata['time'] = g_savedata['time'] + game_ticks
-    local peer_list = server.getPlayers()
 
     cleanVehicleDB()
-    cleanMarkerDB()
+
+    local peer_id_tbl = getPeerIDTable()
     for peer_id, _ in pairs(g_hide) do
-        if not getPlayerExists(peer_id) then
+        if peer_id_tbl[peer_id] == nil then
             g_hide[peer_id] = nil
         end
     end
-
-    local function onVehicleExists(info)
-        local vehicle_matrix, _
-        local vehicle_x, vehicle_y, vehicle_z
-        for _, peer in pairs(peer_list) do
-            if (getMarker(-1, info['vehicle_id']) == 'G' or getMarker(peer['id'], info['vehicle_id']) == 'L') and (not g_hide[peer['id']]) then
-                if vehicle_matrix == nil then
-                    vehicle_matrix, _ = server.getVehiclePos(info['vehicle_id'])
-                    vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
-                end
-                local popup_text = info['vehicle_display_name']
-                local peer_matrix, is_success = server.getPlayerPos(peer['id'])
-                if is_success then
-                    popup_text = popup_text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
-                end
-
-                g_uim.setMapObject(peer['id'], info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
-                g_uim.setPopup(peer['id'], info['ui_id'], getAnnounceName(), true, popup_text, vehicle_x, vehicle_y, vehicle_z, 0)
-            end
-        end
+    for peer_id, _ in pairs(g_hide) do
+        peer_id_tbl[peer_id] = nil
     end
 
-    for _, info in pairs(g_savedata['vehicle_db']) do
-        onVehicleExists(info)
+    cleanMarkerDB()
+    for peer_id, _ in pairs(peer_id_tbl) do
+        for vehicle_id, _ in pairs(getMarkerTable(-1, peer_id)) do
+            local info = g_savedata['vehicle_db'][vehicle_id]
+            local vehicle_matrix, _ = server.getVehiclePos(vehicle_id)
+            local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
+            local popup_text = info['vehicle_display_name']
+            local peer_matrix, is_success = server.getPlayerPos(peer_id)
+            if is_success then
+                popup_text = popup_text .. '\n' .. formatDistance(matrix.distance(peer_matrix, vehicle_matrix))
+            end
+            g_uim.setMapObject(peer_id, info['ui_id'], 0, 2, vehicle_x, vehicle_z, 0, 0, -1, -1, info['vehicle_display_name'], 0, '')
+            g_uim.setPopup(peer_id, info['ui_id'], getAnnounceName(), true, popup_text, vehicle_x, vehicle_y, vehicle_z, 0)
+        end
     end
     g_uim.flush()
 end
