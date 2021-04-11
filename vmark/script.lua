@@ -538,6 +538,8 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     local vehicle_name, is_success = server.getVehicleName(vehicle_id)
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
+
+    cleanVehicleDB()
     g_savedata['vehicle_db'][vehicle_id] = info
 end
 
