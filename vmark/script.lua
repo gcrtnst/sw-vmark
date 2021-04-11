@@ -19,14 +19,12 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             execHelp(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'list' then
             execList(user_peer_id, is_admin, is_auth, args)
-        elseif args[1] == 'set' then
+        elseif args[1] == 'set' or args[1] == 'setlocal' then
             execSet(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clear' then
             execClear(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'restore' then
             execRestore(user_peer_id, is_admin, is_auth, args)
-        elseif args[1] == 'setlocal' then
-            execSetLocal(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'clearlocal' then
             execClearLocal(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'hide' then
@@ -350,20 +348,37 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             return
         end
     end
-    setMarker(-1, info['vehicle_id'])
 
-    server.announce(
-        getAnnounceName(),
-        string.format(
-            (
-                '%s set global marker on %s\n' ..
-                '(vehicle_id = %d)'
-            ),
-            getPlayerDisplayName(user_peer_id),
-            info['vehicle_display_name'],
-            info['vehicle_id']
+    if args[1] == 'set' then
+        setMarker(-1, info['vehicle_id'])
+        server.announce(
+            getAnnounceName(),
+            string.format(
+                (
+                    '%s set global marker on %s\n' ..
+                    '(vehicle_id = %d)'
+                ),
+                getPlayerDisplayName(user_peer_id),
+                info['vehicle_display_name'],
+                info['vehicle_id']
+            )
         )
-    )
+    else
+        setMarker(user_peer_id, info['vehicle_id'])
+        server.announce(
+            getAnnounceName(),
+            string.format(
+                (
+                    '%s set local marker on %s\n' ..
+                    '(vehicle_id = %d)'
+                ),
+                getPlayerDisplayName(user_peer_id),
+                info['vehicle_display_name'],
+                info['vehicle_id']
+            ),
+            user_peer_id
+        )
+    end
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
@@ -448,65 +463,6 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
     server.announce(
         getAnnounceName(),
         string.format('%s restored global markers', getPlayerDisplayName(user_peer_id))
-    )
-end
-
-function execSetLocal(user_peer_id, is_admin, is_auth, args)
-    if #args > 2 then
-        server.announce(
-            getAnnounceName(),
-            'error: too many arguments',
-            user_peer_id
-        )
-        return
-    end
-
-    cleanVehicleDB()
-    local info = nil
-    if #args == 2 then
-        local vehicle_id = tonumber(args[2])
-        if vehicle_id == fail or vehicle_id < 0 or math.floor(vehicle_id) ~= vehicle_id then
-            server.announce(
-                getAnnounceName(),
-                string.format('error: got invalid vehicle_id "%s"', args[2]),
-                user_peer_id
-            )
-            return
-        end
-        info = g_savedata['vehicle_db'][vehicle_id]
-        if info == nil then
-            server.announce(
-                getAnnounceName(),
-                string.format('error: got unrecorded vehicle_id "%d"', vehicle_id),
-                user_peer_id
-            )
-            return
-        end
-    else
-        info = getLastSpawnedVehicleInfo()
-        if info == nil then
-            server.announce(
-                getAnnounceName(),
-                'error: no markable vehicles exist',
-                user_peer_id
-            )
-            return
-        end
-    end
-    setMarker(user_peer_id, info['vehicle_id'])
-
-    server.announce(
-        getAnnounceName(),
-        string.format(
-            (
-                '%s set local marker on %s\n' ..
-                '(vehicle_id = %d)'
-            ),
-            getPlayerDisplayName(user_peer_id),
-            info['vehicle_display_name'],
-            info['vehicle_id']
-        ),
-        user_peer_id
     )
 end
 
