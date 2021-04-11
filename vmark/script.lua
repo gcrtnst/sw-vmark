@@ -676,9 +676,9 @@ function getMarkerTable(...)
                 mark[vehicle_id] = true
             end
         elseif g_mark[peer_id] ~= nil then
-                for vehicle_id, _ in pairs(g_mark[peer_id]) do
-                    mark[vehicle_id] = true
-                end
+            for vehicle_id, _ in pairs(g_mark[peer_id]) do
+                mark[vehicle_id] = true
+            end
         end
     end
     return mark
