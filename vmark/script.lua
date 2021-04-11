@@ -21,12 +21,10 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, cmd, ...
             execList(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'set' or args[1] == 'setlocal' then
             execSet(user_peer_id, is_admin, is_auth, args)
-        elseif args[1] == 'clear' then
+        elseif args[1] == 'clear' or args[1] == 'clearlocal' then
             execClear(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'restore' then
             execRestore(user_peer_id, is_admin, is_auth, args)
-        elseif args[1] == 'clearlocal' then
-            execClearLocal(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'hide' then
             execHide(user_peer_id, is_admin, is_auth, args)
         elseif args[1] == 'show' then
@@ -405,23 +403,32 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     end
 
     if vehicle_id < 0 then
-        cleanMarkerDB()
-        local bak = getMarkerTable(-1)
-        if next(bak) ~= nil then
-            g_savedata['bak'] = bak
-        end
+        if args[1] == 'clear' then
+            cleanMarkerDB()
+            local bak = getMarkerTable(-1)
+            if next(bak) ~= nil then
+                g_savedata['bak'] = bak
+            end
 
-        removeMarker(-1, -1)
-        server.announce(
-            getAnnounceName(),
-            string.format(
-                (
-                    '%s cleared all global markers\n' ..
-                    'use "?vmark restore" to undo'
-                ),
-                getPlayerDisplayName(user_peer_id)
+            removeMarker(-1, -1)
+            server.announce(
+                getAnnounceName(),
+                string.format(
+                    (
+                        '%s cleared all global markers\n' ..
+                        'use "?vmark restore" to undo'
+                    ),
+                    getPlayerDisplayName(user_peer_id)
+                )
             )
-        )
+        else
+            removeMarker(user_peer_id, -1)
+            server.announce(
+                getAnnounceName(),
+                string.format('%s cleared all local markers', getPlayerDisplayName(user_peer_id)),
+                user_peer_id
+            )
+        end
     else
         cleanVehicleDB()
         local info = g_savedata['vehicle_db'][vehicle_id]
@@ -433,20 +440,37 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        removeMarker(-1, info['vehicle_id'])
 
-        server.announce(
-            getAnnounceName(),
-            string.format(
-                (
-                    '%s cleared global marker on %s\n' ..
-                    '(vehicle_id = %d)'
-                ),
-                getPlayerDisplayName(user_peer_id),
-                info['vehicle_display_name'],
-                info['vehicle_id']
+        if args[1] == 'clear' then
+            removeMarker(-1, info['vehicle_id'])
+            server.announce(
+                getAnnounceName(),
+                string.format(
+                    (
+                        '%s cleared global marker on %s\n' ..
+                        '(vehicle_id = %d)'
+                    ),
+                    getPlayerDisplayName(user_peer_id),
+                    info['vehicle_display_name'],
+                    info['vehicle_id']
+                )
             )
-        )
+        else
+            removeMarker(user_peer_id, info['vehicle_id'])
+            server.announce(
+                getAnnounceName(),
+                string.format(
+                    (
+                        '%s cleared local marker on %s\n' ..
+                        '(vehicle_id = %d)'
+                    ),
+                    getPlayerDisplayName(user_peer_id),
+                    info['vehicle_display_name'],
+                    info['vehicle_id']
+                ),
+                user_peer_id
+            )
+        end
     end
 end
 
@@ -464,65 +488,6 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         getAnnounceName(),
         string.format('%s restored global markers', getPlayerDisplayName(user_peer_id))
     )
-end
-
-function execClearLocal(user_peer_id, is_admin, is_auth, args)
-    if #args > 2 then
-        server.announce(
-            getAnnounceName(),
-            'error: too many arguments',
-            user_peer_id
-        )
-        return
-    end
-
-    local vehicle_id = -1
-    if #args >= 2 then
-        vehicle_id = tonumber(args[2])
-        if vehicle_id == fail or math.floor(vehicle_id) ~= vehicle_id then
-            server.announce(
-                getAnnounceName(),
-                string.format('error: got invalid vehicle_id "%s"', args[2]),
-                user_peer_id
-            )
-            return
-        end
-    end
-
-    if vehicle_id < 0 then
-        removeMarker(user_peer_id, -1)
-        server.announce(
-            getAnnounceName(),
-            string.format('%s cleared all local markers', getPlayerDisplayName(user_peer_id)),
-            user_peer_id
-        )
-    else
-        cleanVehicleDB()
-        local info = g_savedata['vehicle_db'][vehicle_id]
-        if info == nil then
-            server.announce(
-                getAnnounceName(),
-                string.format('error: got unrecorded vehicle_id "%d"', vehicle_id),
-                user_peer_id
-            )
-            return
-        end
-        removeMarker(user_peer_id, info['vehicle_id'])
-
-        server.announce(
-            getAnnounceName(),
-            string.format(
-                (
-                    '%s cleared local marker on %s\n' ..
-                    '(vehicle_id = %d)'
-                ),
-                getPlayerDisplayName(user_peer_id),
-                info['vehicle_display_name'],
-                info['vehicle_id']
-            ),
-            user_peer_id
-        )
-    end
 end
 
 function execHide(user_peer_id, is_admin, is_auth, args)
