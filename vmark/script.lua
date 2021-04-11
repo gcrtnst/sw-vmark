@@ -202,7 +202,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
         local peer_id = getOwnerPeerID(owner)
         if peer_id == nil then
             return -1
-        elseif peer_id == -1 then
+        elseif peer_id < 0 then
             return -2
         end
         return peer_id
@@ -379,7 +379,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
     local vehicle_id = -1
     if #args >= 2 then
         vehicle_id = tonumber(args[2])
-        if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
+        if vehicle_id == fail or math.floor(vehicle_id) ~= vehicle_id then
             server.announce(
                 getAnnounceName(),
                 string.format('error: got invalid vehicle_id "%s"', args[2]),
@@ -523,7 +523,7 @@ function execClearLocal(user_peer_id, is_admin, is_auth, args)
     local vehicle_id = -1
     if #args >= 2 then
         vehicle_id = tonumber(args[2])
-        if vehicle_id == fail or vehicle_id < -1 or math.floor(vehicle_id) ~= vehicle_id then
+        if vehicle_id == fail or math.floor(vehicle_id) ~= vehicle_id then
             server.announce(
                 getAnnounceName(),
                 string.format('error: got invalid vehicle_id "%s"', args[2]),
@@ -750,7 +750,7 @@ end
 function getMarkerTable(...)
     local mark = {}
     for _, peer_id in pairs({...}) do
-        if peer_id == -1 then
+        if peer_id < 0 then
             for vehicle_id, _ in pairs(g_savedata['mark']) do
                 mark[vehicle_id] = true
             end
@@ -779,7 +779,7 @@ function getMarker(peer_id, vehicle_id)
 end
 
 function setMarker(peer_id, vehicle_id)
-    if peer_id == -1 then
+    if peer_id < 0 then
         g_savedata['mark'][vehicle_id] = true
         return
     end
@@ -790,8 +790,8 @@ function setMarker(peer_id, vehicle_id)
 end
 
 function removeMarker(peer_id, vehicle_id)
-    if peer_id == -1 then
-        if vehicle_id == -1 then
+    if peer_id < 0 then
+        if vehicle_id < 0 then
             g_savedata['mark'] = {}
             return
         end
@@ -801,7 +801,7 @@ function removeMarker(peer_id, vehicle_id)
     if g_mark[peer_id] == nil then
         return
     end
-    if vehicle_id == -1 then
+    if vehicle_id < 0 then
         g_mark[peer_id] = nil
         return
     end
