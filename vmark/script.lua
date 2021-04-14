@@ -1,5 +1,6 @@
 g_cmd = '?vmark'
 g_init = false
+g_data = nil
 g_mark = {}
 g_hide = {}
 g_uim = nil
@@ -267,7 +268,7 @@ function execList(user_peer_id, is_admin, is_auth, args)
             '%s %3d %s %s %s "%s"',
             getMarker(user_peer_id, info['vehicle_id']),
             info['vehicle_id'],
-            formatTicks(g_savedata['time'] - info['spawn_time']),
+            formatTicks(g_data['time'] - info['spawn_time']),
             dist,
             getOwnerDisplayNameAndID(info['owner']),
             info['vehicle_display_name']
@@ -326,7 +327,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             )
             return
         end
-        info = g_savedata['vehicle_db'][vehicle_id]
+        info = g_data['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
                 getAnnounceName(),
@@ -377,6 +378,7 @@ function execSet(user_peer_id, is_admin, is_auth, args)
             user_peer_id
         )
     end
+    saveMarkerDB()
 end
 
 function execClear(user_peer_id, is_admin, is_auth, args)
@@ -407,8 +409,9 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             cleanMarkerDB()
             local bak = getMarkerTable(-1)
             if next(bak) ~= nil then
-                g_savedata['bak'] = bak
+                g_data['bak'] = bak
             end
+            saveBackup()
 
             removeMarker(-1, -1)
             server.announce(
@@ -431,7 +434,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
         end
     else
         cleanVehicleDB()
-        local info = g_savedata['vehicle_db'][vehicle_id]
+        local info = g_data['vehicle_db'][vehicle_id]
         if info == nil then
             server.announce(
                 getAnnounceName(),
@@ -472,6 +475,7 @@ function execClear(user_peer_id, is_admin, is_auth, args)
             )
         end
     end
+    saveMarkerDB()
 end
 
 function execRestore(user_peer_id, is_admin, is_auth, args)
@@ -483,7 +487,8 @@ function execRestore(user_peer_id, is_admin, is_auth, args)
         )
         return
     end
-    setMarkerTable(-1, g_savedata['bak'])
+    setMarkerTable(-1, g_data['bak'])
+    saveMarkerDB()
     server.announce(
         getAnnounceName(),
         string.format('%s restored global markers', getPlayerDisplayName(user_peer_id))
@@ -530,7 +535,7 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     end
 
     local info = {
-        ['spawn_time'] = g_savedata['time'],
+        ['spawn_time'] = g_data['time'],
         ['vehicle_id'] = vehicle_id,
         ['owner'] = getOwner(peer_id),
         ['ui_id'] = server.getMapID(),
@@ -540,14 +545,16 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
 
     cleanVehicleDB()
-    g_savedata['vehicle_db'][vehicle_id] = info
+    g_data['vehicle_db'][vehicle_id] = info
+    saveVehicleDB()
 end
 
 function onTick(game_ticks)
     if not g_init then
         init()
     end
-    g_savedata['time'] = g_savedata['time'] + game_ticks
+    g_data['time'] = g_data['time'] + game_ticks
+    saveTime()
 
     local peer_id_tbl = getPeerIDTable()
     for peer_id, _ in pairs(g_hide) do
@@ -562,7 +569,7 @@ function onTick(game_ticks)
     cleanMarkerDB()
     for peer_id, _ in pairs(peer_id_tbl) do
         for vehicle_id, _ in pairs(getMarkerTable(-1, peer_id)) do
-            local info = g_savedata['vehicle_db'][vehicle_id]
+            local info = g_data['vehicle_db'][vehicle_id]
             local vehicle_matrix, _ = server.getVehiclePos(vehicle_id)
             local vehicle_x, vehicle_y, vehicle_z = matrix.position(vehicle_matrix)
             local popup_text = info['vehicle_display_name']
@@ -584,23 +591,31 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
     g_uim.onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 
     local owner = getOwner(peer_id)
-    for _, info in pairs(g_savedata['vehicle_db']) do
+    for _, info in pairs(g_data['vehicle_db']) do
         if getOwnerEqual(info['owner'], owner) then
             info['owner'] = owner
         end
     end
+    saveVehicleDB()
 end
 
 function init()
     g_init = true
-    initSavedata()
-    initUIManager()
+    loadAll()
+
+    g_uim = buildUIManager()
+    for _, info in pairs(g_data['vehicle_db']) do
+        server.removeMapObject(-1, info['ui_id'])
+        server.removePopup(-1, info['ui_id'])
+    end
 end
 
-function initSavedata()
-    if g_savedata['version'] == 16 then
-        g_savedata['version'] = 17
-        for _, info in pairs(g_savedata['list']) do
+function loadAll()
+    g_data = deepcopy(g_savedata)
+
+    if g_data['version'] == 16 then
+        g_data['version'] = 17
+        for _, info in pairs(g_data['list']) do
             info['owner'] = getOwner(info['peer_id'] >= 0 and 0 or -1)
             info['peer_id'] = nil
             info['peer_name'] = nil
@@ -608,32 +623,32 @@ function initSavedata()
         end
     end
 
-    if g_savedata['version'] == 17 then
-        g_savedata['version'] = 18
+    if g_data['version'] == 17 then
+        g_data['version'] = 18
 
         local bak = {}
-        for _, vehicle_id in pairs(g_savedata['bak']) do
+        for _, vehicle_id in pairs(g_data['bak']) do
             bak[vehicle_id] = true
         end
-        g_savedata['bak'] = bak
+        g_data['bak'] = bak
 
-        g_savedata['mark'] = {}
-        for _, info in pairs(g_savedata['list']) do
+        g_data['mark'] = {}
+        for _, info in pairs(g_data['list']) do
             if info['mark'] then
-                g_savedata['mark'][info['vehicle_id']] = true
+                g_data['mark'][info['vehicle_id']] = true
             end
             info['mark'] = nil
         end
 
-        g_savedata['vehicle_db'] = {}
-        for _, info in pairs(g_savedata['list']) do
-            g_savedata['vehicle_db'][info['vehicle_id']] = info
+        g_data['vehicle_db'] = {}
+        for _, info in pairs(g_data['list']) do
+            g_data['vehicle_db'][info['vehicle_id']] = info
         end
-        g_savedata['list'] = nil
+        g_data['list'] = nil
     end
 
-    if g_savedata['version'] ~= 18 then
-        g_savedata = {
+    if g_data['version'] ~= 18 then
+        g_data = {
             ['version'] = 18,
             ['vehicle_db'] = {},
             ['mark'] = {},
@@ -641,20 +656,40 @@ function initSavedata()
             ['time'] = 0,
         }
     end
+
+    saveAll()
 end
 
-function initUIManager()
-    g_uim = buildUIManager()
-    for _, info in pairs(g_savedata['vehicle_db']) do
-        server.removeMapObject(-1, info['ui_id'])
-        server.removePopup(-1, info['ui_id'])
-    end
+function saveAll()
+    g_savedata = {
+        ['version'] = deepcopy(g_data['version']),
+    }
+    saveVehicleDB()
+    saveMarkerDB()
+    saveBackup()
+    saveTime()
+end
+
+function saveVehicleDB()
+    g_savedata['vehicle_db'] = deepcopy(g_data['vehicle_db'])
+end
+
+function saveMarkerDB()
+    g_savedata['mark'] = deepcopy(g_data['mark'])
+end
+
+function saveBackup()
+    g_savedata['bak'] = deepcopy(g_data['bak'])
+end
+
+function saveTime()
+    g_savedata['time'] = deepcopy(g_data['time'])
 end
 
 function cleanMarkerDB()
-    for vehicle_id, _ in pairs(g_savedata['mark']) do
-        if not getVehicleExists(vehicle_id) or g_savedata['vehicle_db'][vehicle_id] == nil then
-            g_savedata['mark'][vehicle_id] = nil
+    for vehicle_id, _ in pairs(g_data['mark']) do
+        if not getVehicleExists(vehicle_id) or g_data['vehicle_db'][vehicle_id] == nil then
+            g_data['mark'][vehicle_id] = nil
         end
     end
     for peer_id, _ in pairs(g_mark) do
@@ -662,7 +697,7 @@ function cleanMarkerDB()
             g_mark[peer_id] = nil
         else
             for vehicle_id, _ in pairs(g_mark[peer_id]) do
-                if not getVehicleExists(vehicle_id) or g_savedata['vehicle_db'][vehicle_id] == nil then
+                if not getVehicleExists(vehicle_id) or g_data['vehicle_db'][vehicle_id] == nil then
                     g_mark[peer_id][vehicle_id] = nil
                 end
             end
@@ -674,7 +709,7 @@ function getMarkerTable(...)
     local mark = {}
     for _, peer_id in pairs({...}) do
         if peer_id < 0 then
-            for vehicle_id, _ in pairs(g_savedata['mark']) do
+            for vehicle_id, _ in pairs(g_data['mark']) do
                 mark[vehicle_id] = true
             end
         elseif g_mark[peer_id] ~= nil then
@@ -695,7 +730,7 @@ end
 function getMarker(peer_id, vehicle_id)
     if peer_id >= 0 and g_mark[peer_id] ~= nil and g_mark[peer_id][vehicle_id] then
         return 'L'
-    elseif g_savedata['mark'][vehicle_id] then
+    elseif g_data['mark'][vehicle_id] then
         return 'G'
     end
     return '-'
@@ -703,7 +738,7 @@ end
 
 function setMarker(peer_id, vehicle_id)
     if peer_id < 0 then
-        g_savedata['mark'][vehicle_id] = true
+        g_data['mark'][vehicle_id] = true
         return
     end
     if g_mark[peer_id] == nil then
@@ -715,10 +750,10 @@ end
 function removeMarker(peer_id, vehicle_id)
     if peer_id < 0 then
         if vehicle_id < 0 then
-            g_savedata['mark'] = {}
+            g_data['mark'] = {}
             return
         end
-        g_savedata['mark'][vehicle_id] = nil
+        g_data['mark'][vehicle_id] = nil
         return
     end
     if g_mark[peer_id] == nil then
@@ -732,26 +767,26 @@ function removeMarker(peer_id, vehicle_id)
 end
 
 function cleanVehicleDB()
-    for vehicle_id, _ in pairs(g_savedata['vehicle_db']) do
+    for vehicle_id, _ in pairs(g_data['vehicle_db']) do
         if not getVehicleExists(vehicle_id) then
-            g_savedata['vehicle_db'][vehicle_id] = nil
+            g_data['vehicle_db'][vehicle_id] = nil
         end
     end
 end
 
 function getLastSpawnedVehicleInfo()
     local vehicle_id = -1
-    for _, info in pairs(g_savedata['vehicle_db']) do
+    for _, info in pairs(g_data['vehicle_db']) do
         if info['vehicle_id'] > vehicle_id then
             vehicle_id = info['vehicle_id']
         end
     end
-    return g_savedata['vehicle_db'][vehicle_id]
+    return g_data['vehicle_db'][vehicle_id]
 end
 
 function getVehicleList()
     local list = {}
-    for _, info in pairs(g_savedata['vehicle_db']) do
+    for _, info in pairs(g_data['vehicle_db']) do
         table.insert(list, info)
     end
     return list
@@ -1040,4 +1075,16 @@ function reverseTable(tbl)
         new[#tbl - i + 1] = value
     end
     return new
+end
+
+function deepcopy(v)
+    if type(v) ~= 'table' then
+        return v
+    end
+
+    local tbl = {}
+    for key, val in pairs(v) do
+        tbl[deepcopy(key)] = deepcopy(val)
+    end
+    return tbl
 end
