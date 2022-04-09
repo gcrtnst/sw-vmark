@@ -907,7 +907,7 @@ function buildUIManager()
 end
 
 function getOwner(peer_id)
-    if peer_id < 0 then
+    if peer_id < 0 or peer_id == 65535 then -- HACK: In Stormworks v.1.4.15, the peer_id of a vehicle spawned from a script is 65535
         return {['kind'] = 'SCRIPT', ['steam_id'] = nil}
     elseif peer_id == 0 then
         return {['kind'] = 'HOST', ['steam_id'] = nil}
