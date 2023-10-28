@@ -535,7 +535,12 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
         ['owner'] = getOwner(peer_id),
         ['ui_id'] = server.getMapID(),
     }
-    local vehicle_name, is_success = server.getVehicleName(vehicle_id)
+
+    local vehicle_name = ""
+    local is_success = false
+    if server.getVehicleName ~= nil then
+        vehicle_name, is_success = server.getVehicleName(vehicle_id)
+    end
     info['vehicle_name'] = is_success and vehicle_name or nil
     info['vehicle_display_name'] = is_success and vehicle_name or '{unnamed vehicle}'
 
